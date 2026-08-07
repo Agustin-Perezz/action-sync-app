@@ -52,3 +52,6 @@ next-env.d.ts
 # sonarqube
 .scannerwork
 .sonar
+
+# gentle-ai / sdd
+.atl
