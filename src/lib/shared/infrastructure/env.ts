@@ -1,3 +1,4 @@
+// Public env vars — validated at module load (needed by client + server).
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -13,5 +14,27 @@ if (!publishableKey) {
   );
 }
 
+// Server-only secrets — lazy getters so the module loads at build time.
+// Throws on first call (request-time), not on import (build-time).
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing ${name} — set it in your .env file`);
+  }
+  return value;
+}
+
+// Config value, not a secret — the only env var allowed a default.
+const aiModel = process.env.AI_MODEL ?? "gpt-4o";
+
 export const supabaseUrl = url;
 export const supabasePublishableKey = publishableKey;
+export { aiModel };
+
+export function getTrelloApiKey(): string {
+  return requireEnv("TRELLO_API_KEY");
+}
+
+export function getOpenaiApiKey(): string {
+  return requireEnv("OPENAI_API_KEY");
+}
