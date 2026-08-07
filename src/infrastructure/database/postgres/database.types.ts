@@ -7,8 +7,30 @@ export type Json =
   | Json[];
 
 export type Database = {
-  __InternalSupabase: {
-    PostgrestVersion: "14.5";
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
   public: {
     Tables: {
@@ -33,6 +55,99 @@ export type Database = {
         };
         Relationships: [];
       };
+      tasks: {
+        Row: {
+          created_at: string;
+          description: string;
+          due_date: string | null;
+          id: string;
+          status: Database["public"]["Enums"]["task_status"];
+          title: string;
+          transcript_id: string;
+          trello_card_id: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          description?: string;
+          due_date?: string | null;
+          id?: string;
+          status?: Database["public"]["Enums"]["task_status"];
+          title?: string;
+          transcript_id: string;
+          trello_card_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string;
+          due_date?: string | null;
+          id?: string;
+          status?: Database["public"]["Enums"]["task_status"];
+          title?: string;
+          transcript_id?: string;
+          trello_card_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      transcripts: {
+        Row: {
+          created_at: string;
+          id: string;
+          raw_text: string;
+          status: Database["public"]["Enums"]["transcript_status"];
+          title: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          raw_text: string;
+          status?: Database["public"]["Enums"]["transcript_status"];
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          raw_text?: string;
+          status?: Database["public"]["Enums"]["transcript_status"];
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      trello_connections: {
+        Row: {
+          access_token: string;
+          default_board_id: string | null;
+          default_list_id: string | null;
+          id: string;
+          trello_member_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          access_token: string;
+          default_board_id?: string | null;
+          default_list_id?: string | null;
+          id?: string;
+          trello_member_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          access_token?: string;
+          default_board_id?: string | null;
+          default_list_id?: string | null;
+          id?: string;
+          trello_member_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -41,7 +156,8 @@ export type Database = {
       [_ in never]: never;
     };
     Enums: {
-      [_ in never]: never;
+      task_status: "draft" | "synced";
+      transcript_status: "processing" | "reviewing" | "completed" | "failed";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -170,7 +286,13 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  public: {
+  graphql_public: {
     Enums: {},
+  },
+  public: {
+    Enums: {
+      task_status: ["draft", "synced"],
+      transcript_status: ["processing", "reviewing", "completed", "failed"],
+    },
   },
 } as const;
