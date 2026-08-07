@@ -97,4 +97,62 @@ describe("Task", () => {
 
     expect(task.toObject().trelloCardId).toBeNull();
   });
+
+  it("exposes all props through getters", () => {
+    const task = Task.create({
+      id: "00000000-0000-4000-8000-000000000010",
+      transcriptId: "00000000-0000-4000-8000-000000000011",
+      userId: "00000000-0000-4000-8000-000000000012",
+      title: "Getter title",
+      description: "Getter desc",
+      dueDate: "2026-03-01T00:00:00.000Z",
+      status: TASK_STATUS.SYNCED,
+      trelloCardId: "card-999",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
+
+    expect(task.id).toBe("00000000-0000-4000-8000-000000000010");
+    expect(task.transcriptId).toBe("00000000-0000-4000-8000-000000000011");
+    expect(task.userId).toBe("00000000-0000-4000-8000-000000000012");
+    expect(task.title).toBe("Getter title");
+    expect(task.description).toBe("Getter desc");
+    expect(task.dueDate).toBe("2026-03-01T00:00:00.000Z");
+    expect(task.status).toBe(TASK_STATUS.SYNCED);
+    expect(task.trelloCardId).toBe("card-999");
+    expect(task.createdAt).toBe("2026-01-01T00:00:00.000Z");
+  });
+
+  it("rejects an empty title with a descriptive error", () => {
+    expect(() =>
+      Task.create({
+        transcriptId: "00000000-0000-4000-8000-000000000001",
+        userId: "00000000-0000-4000-8000-000000000002",
+        title: "",
+        description: "desc",
+      }),
+    ).toThrow("title must not be empty");
+  });
+
+  it("rejects an empty description with a descriptive error", () => {
+    expect(() =>
+      Task.create({
+        transcriptId: "00000000-0000-4000-8000-000000000001",
+        userId: "00000000-0000-4000-8000-000000000002",
+        title: "Title",
+        description: "",
+      }),
+    ).toThrow("description must not be empty");
+  });
+
+  it("returns a readonly snapshot from toObject", () => {
+    const task = Task.create({
+      transcriptId: "00000000-0000-4000-8000-000000000001",
+      userId: "00000000-0000-4000-8000-000000000002",
+      title: "Original",
+      description: "desc",
+    });
+    const obj = task.toObject();
+
+    expect(obj.title).toBe("Original");
+  });
 });
