@@ -13,13 +13,20 @@ export function aggregateStatus(
   transcriptStatus: string,
   counts: TaskCounts,
 ): SyncHistoryStatus {
-  if (transcriptStatus === "failed") {
-    return SYNC_HISTORY_STATUS.FAILED;
+  switch (transcriptStatus) {
+    case "failed":
+      return SYNC_HISTORY_STATUS.FAILED;
+    case "reviewing":
+      return SYNC_HISTORY_STATUS.PENDING;
+    case "processing":
+      return SYNC_HISTORY_STATUS.PENDING;
+    case "completed":
+      return counts.draft > 0
+        ? SYNC_HISTORY_STATUS.PENDING
+        : SYNC_HISTORY_STATUS.SYNCED;
+    default:
+      return SYNC_HISTORY_STATUS.SYNCED;
   }
-  if (counts.draft > 0 || transcriptStatus === "reviewing") {
-    return SYNC_HISTORY_STATUS.PENDING;
-  }
-  return SYNC_HISTORY_STATUS.SYNCED;
 }
 
 // Pure: map a transcript + task counts to a SyncHistoryEntry.

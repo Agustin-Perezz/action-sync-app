@@ -44,6 +44,12 @@ describe("aggregateStatus", () => {
     );
   });
 
+  it("returns pending when status is processing", () => {
+    expect(aggregateStatus("processing", { draft: 0, synced: 0 })).toBe(
+      SYNC_HISTORY_STATUS.PENDING,
+    );
+  });
+
   it("returns synced when completed and all tasks synced", () => {
     expect(aggregateStatus("completed", { draft: 0, synced: 3 })).toBe(
       SYNC_HISTORY_STATUS.SYNCED,
@@ -81,19 +87,19 @@ describe("toHistoryEntry", () => {
 });
 
 describe("GetSyncHistoryUseCase", () => {
-  it("orders transcripts by created_at desc and maps each to a history entry", async () => {
+  it("maps repo-returned transcripts to history entries in order", async () => {
     const transcripts = [
-      makeTranscript(
-        "00000000-0000-4000-8000-000000000001",
-        "2026-01-01T00:00:00.000Z",
-        TRANSCRIPT_STATUS.REVIEWING,
-        "Older",
-      ),
       makeTranscript(
         "00000000-0000-4000-8000-000000000002",
         "2026-02-01T00:00:00.000Z",
         TRANSCRIPT_STATUS.COMPLETED,
         "Newer",
+      ),
+      makeTranscript(
+        "00000000-0000-4000-8000-000000000001",
+        "2026-01-01T00:00:00.000Z",
+        TRANSCRIPT_STATUS.REVIEWING,
+        "Older",
       ),
     ];
     const repository: GetSyncHistoryRepository = {

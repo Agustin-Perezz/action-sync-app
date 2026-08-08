@@ -13,11 +13,8 @@ export class GetSyncHistoryUseCase {
     if (transcripts.length === 0) {
       return [];
     }
-    const sorted = [...transcripts].sort((a, b) =>
-      b.createdAt.localeCompare(a.createdAt),
-    );
     const entries = await Promise.all(
-      sorted.map(async (t) => {
+      transcripts.map(async (t) => {
         const counts = await this.repository.countTasksByTranscript(t.id);
         return toHistoryEntry(
           {
