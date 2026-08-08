@@ -11,7 +11,7 @@ export const bookAuthorSchema = z
   .check(z.maxLength(BOOK_AUTHOR_MAX_LENGTH));
 
 export const bookSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: bookTitleSchema,
   author: bookAuthorSchema,
   createdAt: z.string(),

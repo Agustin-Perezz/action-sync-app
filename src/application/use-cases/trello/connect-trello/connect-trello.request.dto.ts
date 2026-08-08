@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const connectTrelloRequestDto = z.object({
-  userId: z.string().uuid(),
+  userId: z.uuid(),
   token: z.string().check(z.minLength(1)),
 });
 

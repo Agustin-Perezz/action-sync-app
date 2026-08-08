@@ -9,8 +9,8 @@ export const transcriptTitleSchema = z
 export const transcriptRawTextSchema = z.string().check(z.minLength(1));
 
 export const transcriptSchema = z.object({
-  id: z.string().uuid(),
-  userId: z.string().uuid(),
+  id: z.uuid(),
+  userId: z.uuid(),
   title: transcriptTitleSchema,
   rawText: transcriptRawTextSchema,
   status: z.enum(["processing", "reviewing", "completed", "failed"]),

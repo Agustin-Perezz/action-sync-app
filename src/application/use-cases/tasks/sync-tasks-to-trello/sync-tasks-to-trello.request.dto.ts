@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const syncTasksToTrelloRequestDto = z.object({
-  transcriptId: z.string().uuid(),
-  userId: z.string().uuid(),
+  transcriptId: z.uuid(),
+  userId: z.uuid(),
   listId: z.string().check(z.minLength(1)),
 });
 

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const getReviewDataRequestDto = z.object({
-  transcriptId: z.string().uuid(),
-  userId: z.string().uuid(),
+  transcriptId: z.uuid(),
+  userId: z.uuid(),
 });
 
 export type GetReviewDataRequestDto = z.infer<typeof getReviewDataRequestDto>;
