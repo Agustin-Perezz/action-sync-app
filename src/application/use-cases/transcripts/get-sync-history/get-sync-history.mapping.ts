@@ -1,3 +1,4 @@
+import { TRANSCRIPT_STATUS } from "@/domain/entities/transcript-status.enum";
 import type { TaskCounts } from "./get-sync-history.repository.interface";
 import {
   SYNC_HISTORY_STATUS,
@@ -6,21 +7,18 @@ import {
 } from "./get-sync-history.response.dto";
 
 // Pure: aggregate transcript status + task counts into a history status.
-// - failed transcript → "failed"
-// - any draft or reviewing → "pending"
-// - completed + all synced → "synced"
 export function aggregateStatus(
   transcriptStatus: string,
   counts: TaskCounts,
 ): SyncHistoryStatus {
   switch (transcriptStatus) {
-    case "failed":
+    case TRANSCRIPT_STATUS.FAILED:
       return SYNC_HISTORY_STATUS.FAILED;
-    case "reviewing":
+    case TRANSCRIPT_STATUS.REVIEWING:
       return SYNC_HISTORY_STATUS.PENDING;
-    case "processing":
+    case TRANSCRIPT_STATUS.PROCESSING:
       return SYNC_HISTORY_STATUS.PENDING;
-    case "completed":
+    case TRANSCRIPT_STATUS.COMPLETED:
       return counts.draft > 0
         ? SYNC_HISTORY_STATUS.PENDING
         : SYNC_HISTORY_STATUS.SYNCED;
