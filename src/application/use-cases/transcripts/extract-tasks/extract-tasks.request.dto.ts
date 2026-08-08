@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const extractTasksRequestDto = z.object({
   userId: z.string().uuid(),
-  rawText: z.string().min(1),
+  rawText: z.string().check(z.minLength(1)),
   transcriptId: z.string().uuid().optional(),
 });
 

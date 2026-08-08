@@ -1,8 +1,14 @@
 import { z } from "zod";
 import { BOOK_AUTHOR_MAX_LENGTH, BOOK_TITLE_MAX_LENGTH } from "./book.entity";
 
-export const bookTitleSchema = z.string().min(1).max(BOOK_TITLE_MAX_LENGTH);
-export const bookAuthorSchema = z.string().min(1).max(BOOK_AUTHOR_MAX_LENGTH);
+export const bookTitleSchema = z
+  .string()
+  .check(z.minLength(1))
+  .check(z.maxLength(BOOK_TITLE_MAX_LENGTH));
+export const bookAuthorSchema = z
+  .string()
+  .check(z.minLength(1))
+  .check(z.maxLength(BOOK_AUTHOR_MAX_LENGTH));
 
 export const bookSchema = z.object({
   id: z.string().uuid(),

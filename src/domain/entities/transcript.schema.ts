@@ -3,10 +3,10 @@ import { TRANSCRIPT_TITLE_MAX_LENGTH } from "./transcript.entity";
 
 export const transcriptTitleSchema = z
   .string()
-  .min(1)
-  .max(TRANSCRIPT_TITLE_MAX_LENGTH);
+  .check(z.minLength(1))
+  .check(z.maxLength(TRANSCRIPT_TITLE_MAX_LENGTH));
 
-export const transcriptRawTextSchema = z.string().min(1);
+export const transcriptRawTextSchema = z.string().check(z.minLength(1));
 
 export const transcriptSchema = z.object({
   id: z.string().uuid(),

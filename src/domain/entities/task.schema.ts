@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const taskTitleSchema = z.string().min(1);
-export const taskDescriptionSchema = z.string().min(1);
+export const taskTitleSchema = z.string().check(z.minLength(1));
+export const taskDescriptionSchema = z.string().check(z.minLength(1));
 
 export const taskSchema = z.object({
   id: z.string().uuid(),
