@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 import type {
   ExtractTasksPort,
@@ -23,12 +23,12 @@ const EXTRACT_TASKS_SYSTEM_PROMPT =
 export class VercelAiExtractTasksAdapter implements ExtractTasksPort {
   async extract(transcriptText: string): Promise<ExtractTasksResult> {
     const openai = createOpenAI({ apiKey: getOpenaiApiKey() });
-    const { object } = await generateObject({
+    const { output } = await generateText({
       model: openai(aiModel),
-      schema: extractTasksSchema,
+      output: Output.object({ schema: extractTasksSchema }),
       system: EXTRACT_TASKS_SYSTEM_PROMPT,
       prompt: transcriptText,
     });
-    return object;
+    return output;
   }
 }
