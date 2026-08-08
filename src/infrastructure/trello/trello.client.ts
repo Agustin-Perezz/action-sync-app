@@ -7,8 +7,15 @@ import type {
   TrelloMember,
 } from "@/application/ports/trello-client.port";
 import { TrelloConnectionError } from "@/domain/entities/errors";
+import { trelloApiBaseUrl } from "@/lib/shared/infrastructure/env";
 
-const TRELLO_API_BASE = "https://api.trello.com/1";
+// ponytail: fixed 09:00:00.000Z suffix — Trello treats due as a timestamp;
+// start-of-day UTC 09:00 is the project convention from design #72.
+const DUE_TIME_SUFFIX = "T09:00:00.000Z";
+
+function toTrelloDue(due: string | null): string | undefined {
+  return due === null ? undefined : `${due}${DUE_TIME_SUFFIX}`;
+}
 
 function authQuery(apiKey: string, token: string): URLSearchParams {
   return new URLSearchParams({ key: apiKey, token });
@@ -24,7 +31,7 @@ export class TrelloClient implements TrelloClientPort {
   async getMember(token: string): Promise<TrelloMember> {
     const params = authQuery(this.apiKey, token);
     params.set("fields", "fullName");
-    const res = await fetch(`${TRELLO_API_BASE}/members/me?${params}`, {
+    const res = await fetch(`${trelloApiBaseUrl}/members/me?${params}`, {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) {
@@ -37,7 +44,7 @@ export class TrelloClient implements TrelloClientPort {
   async getBoards(token: string): Promise<TrelloBoard[]> {
     const params = authQuery(this.apiKey, token);
     params.set("fields", "name");
-    const res = await fetch(`${TRELLO_API_BASE}/members/me/boards?${params}`, {
+    const res = await fetch(`${trelloApiBaseUrl}/members/me/boards?${params}`, {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) {
@@ -51,7 +58,7 @@ export class TrelloClient implements TrelloClientPort {
     const params = authQuery(this.apiKey, token);
     params.set("fields", "name");
     const res = await fetch(
-      `${TRELLO_API_BASE}/boards/${boardId}/lists?${params}`,
+      `${trelloApiBaseUrl}/boards/${boardId}/lists?${params}`,
       { headers: { Accept: "application/json" } },
     );
     if (!res.ok) {
@@ -66,10 +73,11 @@ export class TrelloClient implements TrelloClientPort {
     params.set("idList", input.idList);
     params.set("name", input.name);
     params.set("desc", input.desc);
-    if (input.due !== null) {
-      params.set("due", input.due);
+    const due = toTrelloDue(input.due);
+    if (due !== undefined) {
+      params.set("due", due);
     }
-    const res = await fetch(`${TRELLO_API_BASE}/cards`, {
+    const res = await fetch(`${trelloApiBaseUrl}/cards`, {
       method: "POST",
       headers: { Accept: "application/json" },
       body: params,

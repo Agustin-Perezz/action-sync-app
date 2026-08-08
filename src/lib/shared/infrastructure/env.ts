@@ -26,10 +26,12 @@ function requireEnv(name: string): string {
 
 // Config value, not a secret — the only env var allowed a default.
 const aiModel = process.env.AI_MODEL ?? "gpt-4o";
+const trelloApiBaseUrl =
+  process.env.TRELLO_API_BASE_URL ?? "https://api.trello.com/1";
 
 export const supabaseUrl = url;
 export const supabasePublishableKey = publishableKey;
-export { aiModel };
+export { aiModel, trelloApiBaseUrl };
 
 export function getTrelloApiKey(): string {
   return requireEnv("TRELLO_API_KEY");
