@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { GetReviewDataRepository } from "@/application/use-cases/transcripts/get-review-data/get-review-data.repository.interface";
 import type { Task } from "@/domain/entities/task.entity";
+import { TASK_STATUS } from "@/domain/entities/task-status.enum";
 import type { TrelloConnection } from "@/domain/entities/trello-connection.entity";
 import type { Database } from "../../database.types";
 import { taskMapper } from "../../mappers/task.mapper";
@@ -16,7 +17,7 @@ export class SupabaseGetReviewDataRepository
       .from("tasks")
       .select("*")
       .eq("transcript_id", transcriptId)
-      .eq("status", "draft");
+      .eq("status", TASK_STATUS.DRAFT);
 
     if (error) {
       throw new Error(`Failed to fetch draft tasks: ${error.message}`);

@@ -3,6 +3,7 @@ import type {
   GetSyncHistoryRepository,
   TaskCounts,
 } from "@/application/use-cases/transcripts/get-sync-history/get-sync-history.repository.interface";
+import { TASK_STATUS } from "@/domain/entities/task-status.enum";
 import type { Transcript } from "@/domain/entities/transcript.entity";
 import type { Database } from "../../database.types";
 import { transcriptMapper } from "../../mappers/transcript.mapper";
@@ -31,7 +32,7 @@ export class SupabaseGetSyncHistoryRepository
       .from("tasks")
       .select("*", { count: "exact", head: true })
       .eq("transcript_id", transcriptId)
-      .eq("status", "draft");
+      .eq("status", TASK_STATUS.DRAFT);
 
     if (draftError) {
       throw new Error(`Failed to count draft tasks: ${draftError.message}`);
@@ -41,7 +42,7 @@ export class SupabaseGetSyncHistoryRepository
       .from("tasks")
       .select("*", { count: "exact", head: true })
       .eq("transcript_id", transcriptId)
-      .eq("status", "synced");
+      .eq("status", TASK_STATUS.SYNCED);
 
     if (syncedError) {
       throw new Error(`Failed to count synced tasks: ${syncedError.message}`);

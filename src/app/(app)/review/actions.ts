@@ -32,13 +32,13 @@ export async function getReviewData(
 export async function getLists(boardId: string): Promise<TrelloList[]> {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
-  const { trelloClient, getTrelloConnectionRepository } =
+  const { trelloClient, getTrelloConnection } =
     createActionSyncContainer(supabase);
 
   // ponytail: getLists has no use case — it's a pure Trello pass-through after
   // the user picks a board. We resolve the connection row here to get the
   // token, then call TrelloClient directly. No domain logic to encapsulate.
-  const connection = await getTrelloConnectionRepository.findByUserId(user.id);
+  const connection = await getTrelloConnection().findByUserId(user.id);
   if (!connection) {
     return [];
   }

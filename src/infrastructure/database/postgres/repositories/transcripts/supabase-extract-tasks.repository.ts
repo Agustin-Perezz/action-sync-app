@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ExtractTasksRepository } from "@/application/use-cases/transcripts/extract-tasks/extract-tasks.repository.interface";
 import type { Task } from "@/domain/entities/task.entity";
+import { TASK_STATUS } from "@/domain/entities/task-status.enum";
 import type { Transcript } from "@/domain/entities/transcript.entity";
 import type { TranscriptStatus } from "@/domain/entities/transcript-status.enum";
 import type { Database } from "../../database.types";
@@ -50,7 +51,7 @@ export class SupabaseExtractTasksRepository implements ExtractTasksRepository {
       .from("tasks")
       .delete()
       .eq("transcript_id", transcriptId)
-      .eq("status", "draft");
+      .eq("status", TASK_STATUS.DRAFT);
 
     if (error) {
       throw new Error(`Failed to delete draft tasks: ${error.message}`);

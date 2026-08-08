@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SyncTasksRepository } from "@/application/use-cases/tasks/sync-tasks-to-trello/sync-tasks-to-trello.repository.interface";
 import type { Task } from "@/domain/entities/task.entity";
+import { TASK_STATUS } from "@/domain/entities/task-status.enum";
 import type { TranscriptStatus } from "@/domain/entities/transcript-status.enum";
 import type { TrelloConnection } from "@/domain/entities/trello-connection.entity";
 import type { Database } from "../../database.types";
@@ -33,7 +34,7 @@ export class SupabaseSyncTasksRepository implements SyncTasksRepository {
       .from("tasks")
       .select("*")
       .eq("transcript_id", transcriptId)
-      .eq("status", "draft");
+      .eq("status", TASK_STATUS.DRAFT);
 
     if (error) {
       throw new Error(`Failed to fetch draft tasks: ${error.message}`);
@@ -45,7 +46,7 @@ export class SupabaseSyncTasksRepository implements SyncTasksRepository {
   async markSynced(taskId: string, trelloCardId: string): Promise<void> {
     const { error } = await this.supabase
       .from("tasks")
-      .update({ status: "synced", trello_card_id: trelloCardId })
+      .update({ status: TASK_STATUS.SYNCED, trello_card_id: trelloCardId })
       .eq("id", taskId);
 
     if (error) {
