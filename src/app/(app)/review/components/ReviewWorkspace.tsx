@@ -1,16 +1,28 @@
 "use client";
 
 import { useReviewTasks } from "../hooks/useReviewTasks";
-import { INITIAL_TASKS, MOCK_BOARDS, MOCK_LISTS } from "../types";
+import type { Board, Task } from "../types";
 import { AddManualTaskButton } from "./AddManualTaskButton";
 import { ReviewControls } from "./ReviewControls";
 import { TaskList } from "./TaskList";
 
-export function ReviewWorkspace() {
+export type ReviewWorkspaceProps = {
+  readonly transcriptId: string;
+  readonly initialTasks: readonly Task[];
+  readonly initialBoards: readonly Board[];
+};
+
+export function ReviewWorkspace({
+  transcriptId,
+  initialTasks,
+  initialBoards,
+}: ReviewWorkspaceProps) {
   const {
     tasks,
     board,
     list,
+    boards,
+    lists,
     isSyncing,
     handleChange,
     handleDelete,
@@ -18,7 +30,7 @@ export function ReviewWorkspace() {
     handleSync,
     setBoard,
     setList,
-  } = useReviewTasks(INITIAL_TASKS, MOCK_BOARDS[0], MOCK_LISTS[0]);
+  } = useReviewTasks({ transcriptId, initialTasks, initialBoards });
 
   return (
     <div>
@@ -26,8 +38,8 @@ export function ReviewWorkspace() {
         taskCount={tasks.length}
         board={board}
         list={list}
-        boards={MOCK_BOARDS}
-        lists={MOCK_LISTS}
+        boards={boards}
+        lists={lists}
         isSyncing={isSyncing}
         onBoardChange={setBoard}
         onListChange={setList}

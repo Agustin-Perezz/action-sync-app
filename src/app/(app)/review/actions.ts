@@ -78,7 +78,14 @@ export async function deleteTask(taskId: string): Promise<void> {
   revalidatePath(REVIEW_PATH);
 }
 
-export async function addManualTask(transcriptId: string): Promise<void> {
+export async function addManualTask(transcriptId: string): Promise<{
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string | null;
+  status: "draft" | "synced";
+  trelloCardId: string | null;
+} | null> {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
   const { tasks } = createActionSyncContainer(supabase);
@@ -88,9 +95,18 @@ export async function addManualTask(transcriptId: string): Promise<void> {
     userId: user.id,
   });
 
-  await tasks.addManual.execute(dto);
+  const { task } = await tasks.addManual.execute(dto);
 
   revalidatePath(REVIEW_PATH);
+
+  return {
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    dueDate: task.dueDate,
+    status: task.status,
+    trelloCardId: task.trelloCardId,
+  };
 }
 
 export async function syncTasksToTrello(input: {
