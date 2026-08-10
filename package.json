@@ -22,7 +22,7 @@
     "supabase:stop": "supabase stop",
     "supabase:push": "supabase db push",
     "supabase:reset": "supabase db reset",
-    "supabase:gen-types": "supabase gen types --typescript --project-id ypdlrfoioxdlcowdjpiz --schema public > src/infrastructure/database/postgres/database.types.ts",
+    "supabase:gen-types": "supabase gen types --lang typescript --local --schema public > src/infrastructure/database/postgres/database.types.ts",
     "prepare": "husky"
   },
   "nano-staged": {
