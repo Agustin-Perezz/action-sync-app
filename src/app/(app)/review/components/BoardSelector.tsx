@@ -26,15 +26,13 @@ export function BoardSelector({
   onSelect,
 }: BoardSelectorProps) {
   const selectedName = options.find((option) => option.id === value)?.name;
-  const display = selectedName ?? label;
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={<Button variant="outline" size="sm" className="gap-1.5" />}
       >
         <span className="text-muted-foreground">{label}:</span>
-        <span className="font-medium">{display}</span>
+        <span className="font-medium">{selectedName ?? label}</span>
         <ChevronDown className="size-3.5 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
