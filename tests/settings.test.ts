@@ -1,5 +1,10 @@
 import { expect, test } from "./_shared/app-fixtures";
 
+// E2E runs anonymous against local Supabase. getTrelloConnection returns the
+// row state (none for anonymous), so the disconnected state is the initial
+// surface. The connect flow is a real Trello OAuth redirect — it needs Trello
+// network stubs and is out of scope for the MVP E2E suite (see task 8.2).
+
 test("settings page shows heading and Trello card", async ({ page }) => {
   await page.goto("/settings");
 
@@ -12,27 +17,8 @@ test("settings page shows heading and Trello card", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("trello starts disconnected and can be connected", async ({ page }) => {
+test("trello starts disconnected with a connect button", async ({ page }) => {
   await page.goto("/settings");
-
-  await expect(page.getByText("Not connected")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Connect Trello" }),
-  ).toBeVisible();
-
-  await page.getByRole("button", { name: "Connect Trello" }).click();
-
-  await expect(page.getByText("Connected as Alex Carter")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Disconnect" })).toBeVisible();
-});
-
-test("user can disconnect after connecting", async ({ page }) => {
-  await page.goto("/settings");
-
-  await page.getByRole("button", { name: "Connect Trello" }).click();
-  await expect(page.getByText("Connected as Alex Carter")).toBeVisible();
-
-  await page.getByRole("button", { name: "Disconnect" }).click();
 
   await expect(page.getByText("Not connected")).toBeVisible();
   await expect(
