@@ -6,12 +6,12 @@ import { TrelloConnectionToggle } from "./TrelloConnectionToggle";
 
 export type TrelloIntegrationCardProps = {
   readonly connected: boolean;
-  readonly onToggle: () => void;
+  readonly memberName: string | null;
 };
 
 export function TrelloIntegrationCard({
   connected,
-  onToggle,
+  memberName,
 }: TrelloIntegrationCardProps) {
   return (
     <Card className="rounded-3xl bg-secondary ring-1 ring-border">
@@ -31,7 +31,7 @@ export function TrelloIntegrationCard({
       </CardHeader>
       <Separator />
       <CardContent className="flex items-center justify-between gap-3 py-5">
-        <TrelloConnectionToggle connected={connected} onToggle={onToggle} />
+        <TrelloConnectionToggle connected={connected} memberName={memberName} />
       </CardContent>
     </Card>
   );
