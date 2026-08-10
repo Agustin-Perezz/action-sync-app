@@ -1,45 +1,48 @@
 "use client";
 
 import { useReviewTasks } from "../hooks/useReviewTasks";
-import { INITIAL_TASKS, MOCK_BOARDS, MOCK_LISTS } from "../types";
+import type { Board, Task } from "../types";
 import { AddManualTaskButton } from "./AddManualTaskButton";
 import { ReviewControls } from "./ReviewControls";
 import { TaskList } from "./TaskList";
 
-export function ReviewWorkspace() {
-  const {
-    tasks,
-    board,
-    list,
-    isSyncing,
-    handleChange,
-    handleDelete,
-    handleAddManual,
-    handleSync,
-    setBoard,
-    setList,
-  } = useReviewTasks(INITIAL_TASKS, MOCK_BOARDS[0], MOCK_LISTS[0]);
+export type ReviewWorkspaceProps = {
+  readonly transcriptId: string;
+  readonly initialTasks: readonly Task[];
+  readonly initialBoards: readonly Board[];
+};
+
+export function ReviewWorkspace({
+  transcriptId,
+  initialTasks,
+  initialBoards,
+}: ReviewWorkspaceProps) {
+  const review = useReviewTasks({
+    transcriptId,
+    initialTasks,
+    initialBoards,
+  });
 
   return (
     <div>
       <ReviewControls
-        taskCount={tasks.length}
-        board={board}
-        list={list}
-        boards={MOCK_BOARDS}
-        lists={MOCK_LISTS}
-        isSyncing={isSyncing}
-        onBoardChange={setBoard}
-        onListChange={setList}
-        onSync={handleSync}
+        taskCount={review.tasks.length}
+        board={review.board}
+        list={review.list}
+        boards={review.boards}
+        lists={review.lists}
+        isSyncing={review.isSyncing}
+        onBoardChange={review.setBoard}
+        onListChange={review.setList}
+        onSync={review.handleSync}
       />
       <div className="mx-auto flex max-w-3xl flex-col gap-3 px-6 py-8">
         <TaskList
-          tasks={tasks}
-          onChange={handleChange}
-          onDelete={handleDelete}
+          tasks={review.tasks}
+          onChange={review.handleChange}
+          onDelete={review.handleDelete}
         />
-        <AddManualTaskButton onAdd={handleAddManual} />
+        <AddManualTaskButton onAdd={review.handleAddManual} />
       </div>
     </div>
   );

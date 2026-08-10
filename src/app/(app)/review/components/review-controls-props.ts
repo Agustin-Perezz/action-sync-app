@@ -1,11 +1,13 @@
+import type { Board, List } from "../types";
+
 export type ReviewControlsProps = {
   readonly taskCount: number;
-  readonly board: string;
-  readonly list: string;
-  readonly boards: readonly string[];
-  readonly lists: readonly string[];
+  readonly board: string | null;
+  readonly list: string | null;
+  readonly boards: readonly Board[];
+  readonly lists: readonly List[];
   readonly isSyncing: boolean;
-  readonly onBoardChange: (value: string) => void;
-  readonly onListChange: (value: string) => void;
+  readonly onBoardChange: (id: string) => void;
+  readonly onListChange: (id: string) => void;
   readonly onSync: () => void;
 };

@@ -53,5 +53,9 @@ next-env.d.ts
 .scannerwork
 .sonar
 
+# supabase local
+/supabase/.branches/
+/supabase/.temp/
+
 # gentle-ai / sdd
 .atl

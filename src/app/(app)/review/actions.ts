@@ -8,6 +8,7 @@ import { syncTasksToTrelloRequestDto } from "@/application/use-cases/tasks/sync-
 import { updateTaskRequestDto } from "@/application/use-cases/tasks/update-task/update-task.request.dto";
 import { getReviewDataRequestDto } from "@/application/use-cases/transcripts/get-review-data/get-review-data.request.dto";
 import type { GetReviewDataResponseDto } from "@/application/use-cases/transcripts/get-review-data/get-review-data.response.dto";
+import type { TaskStatus } from "@/domain/entities/task-status.enum";
 import { createActionSyncContainer } from "@/lib/containers/action-sync.container";
 import { requireUser } from "@/lib/shared/infrastructure/auth.server";
 import { createSupabaseServerClient } from "@/lib/shared/infrastructure/supabase.server";
@@ -78,7 +79,14 @@ export async function deleteTask(taskId: string): Promise<void> {
   revalidatePath(REVIEW_PATH);
 }
 
-export async function addManualTask(transcriptId: string): Promise<void> {
+export async function addManualTask(transcriptId: string): Promise<{
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string | null;
+  status: TaskStatus;
+  trelloCardId: string | null;
+} | null> {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
   const { tasks } = createActionSyncContainer(supabase);
@@ -88,9 +96,18 @@ export async function addManualTask(transcriptId: string): Promise<void> {
     userId: user.id,
   });
 
-  await tasks.addManual.execute(dto);
+  const { task } = await tasks.addManual.execute(dto);
 
   revalidatePath(REVIEW_PATH);
+
+  return {
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    dueDate: task.dueDate,
+    status: task.status,
+    trelloCardId: task.trelloCardId,
+  };
 }
 
 export async function syncTasksToTrello(input: {

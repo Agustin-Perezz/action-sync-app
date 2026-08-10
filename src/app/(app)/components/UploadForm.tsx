@@ -1,24 +1,23 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { FileDropzone } from "@/components/ui/file-dropzone";
 import { Textarea } from "@/components/ui/textarea";
+import { extractTasksFromText } from "../actions";
 import { UploadActions } from "./UploadActions";
 
-const EXTRACT_DELAY_MS = 1200;
-
 export function UploadForm() {
-  const router = useRouter();
-  const [isExtracting, setIsExtracting] = useState(false);
+  const [rawText, setRawText] = useState("");
+  const [isExtracting, startTransition] = useTransition();
 
   function handleExtract() {
-    setIsExtracting(true);
-    setTimeout(() => {
-      setIsExtracting(false);
-      router.push("/review");
-    }, EXTRACT_DELAY_MS);
+    if (rawText.trim().length === 0) return;
+    startTransition(async () => {
+      // The action redirects to /review?transcript={id} on success; for
+      // anonymous visitors it redirects to /signin via requireUser().
+      await extractTasksFromText(rawText);
+    });
   }
 
   return (
@@ -39,6 +38,8 @@ export function UploadForm() {
         </label>
         <Textarea
           id="transcript-text"
+          value={rawText}
+          onChange={(event) => setRawText(event.target.value)}
           placeholder="Paste your meeting transcript here…"
           className="min-h-[160px] bg-card"
         />
