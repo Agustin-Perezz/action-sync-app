@@ -1,6 +1,7 @@
 import { test as base, expect } from "@playwright/test";
 import { addCoverageReport } from "monocart-reporter";
 
+import { authenticate } from "./fixtures/auth";
 import { supabaseTestClient } from "./fixtures/supabase-test-client";
 
 const CHROMIUM_PROJECT = "chromium";
@@ -27,6 +28,10 @@ const test = base.extend<{
         resetOnNavigation: false,
       });
     }
+
+    // ponytail: (app) layout guards all routes via requireUser(), so every
+    // E2E test needs a real session cookie before navigating.
+    await authenticate(page);
 
     await use(page);
 

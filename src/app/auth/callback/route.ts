@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { DASHBOARD_PATH } from "@/lib/shared/infrastructure/auth.server";
+import { HOME_PATH } from "@/lib/shared/infrastructure/auth.server";
 import { createSupabaseServerClient } from "@/lib/shared/infrastructure/supabase.server";
 
 export async function GET(request: Request) {
@@ -11,5 +11,5 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  redirect(DASHBOARD_PATH);
+  redirect(HOME_PATH);
 }

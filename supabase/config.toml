@@ -1,0 +1,7 @@
+project_id = "action-sync"
+
+[auth.external.google]
+enabled = true
+client_id = "471969374330-kk047nskiuhrr783q08n0r0a0007md6m.apps.googleusercontent.com"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false

@@ -1,11 +1,14 @@
+import { requireUser } from "@/lib/shared/infrastructure/auth.server";
 import { AppHeader } from "./components/AppHeader";
 import { AppSidebar } from "./components/AppSidebar";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await requireUser();
+
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="fixed inset-y-0 left-0 hidden w-60 border-r bg-sidebar md:block">
