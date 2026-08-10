@@ -5,9 +5,6 @@ import {
   supabaseUrl,
 } from "@/lib/shared/infrastructure/env";
 
-const PROTECTED_PREFIXES = ["/dashboard"] as const;
-const SIGNIN_PATH = "/signin";
-
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -28,17 +25,9 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    request.nextUrl.pathname.startsWith(prefix),
-  );
-
-  if (isProtected && !user) {
-    return NextResponse.redirect(new URL(SIGNIN_PATH, request.url));
-  }
+  // ponytail: route protection lives in the (app) layout via requireUser();
+  // middleware only refreshes the session cookie for SSR.
+  await supabase.auth.getUser();
 
   return response;
 }

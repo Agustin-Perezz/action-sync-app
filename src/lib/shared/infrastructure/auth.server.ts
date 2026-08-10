@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/shared/infrastructure/supabase.server";
+import { AUTH_CALLBACK_PATH, HOME_PATH, SIGNIN_PATH } from "./auth-paths";
 
 export type User = {
   id: string;
@@ -7,9 +8,7 @@ export type User = {
   name?: string;
 };
 
-export const SIGNIN_PATH = "/signin";
-export const DASHBOARD_PATH = "/dashboard";
-export const AUTH_CALLBACK_PATH = "/auth/callback";
+export { AUTH_CALLBACK_PATH, HOME_PATH, SIGNIN_PATH };
 
 export async function getUser(): Promise<User | null> {
   const supabase = await createSupabaseServerClient();
