@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { TASK_STATUS } from "@/domain/entities/task-status.enum";
 import {
   addManualTask,
   deleteTask,
@@ -73,7 +74,7 @@ export function useReviewTasks({
     void syncTasksToTrello({ transcriptId, listId: list })
       .then(() => {
         setTasks((prev) =>
-          prev.map((task) => ({ ...task, status: "synced" as const })),
+          prev.map((task) => ({ ...task, status: TASK_STATUS.SYNCED })),
         );
       })
       .finally(() => setIsSyncing(false));

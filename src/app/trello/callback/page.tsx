@@ -12,7 +12,7 @@ export default function TrelloCallbackPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const match = window.location.hash.match(TOKEN_HASH_PATTERN);
+    const match = TOKEN_HASH_PATTERN.exec(window.location.hash);
     if (!match) {
       setError("No token found in URL.");
       return;

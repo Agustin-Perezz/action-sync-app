@@ -8,6 +8,7 @@ import { syncTasksToTrelloRequestDto } from "@/application/use-cases/tasks/sync-
 import { updateTaskRequestDto } from "@/application/use-cases/tasks/update-task/update-task.request.dto";
 import { getReviewDataRequestDto } from "@/application/use-cases/transcripts/get-review-data/get-review-data.request.dto";
 import type { GetReviewDataResponseDto } from "@/application/use-cases/transcripts/get-review-data/get-review-data.response.dto";
+import type { TaskStatus } from "@/domain/entities/task-status.enum";
 import { createActionSyncContainer } from "@/lib/containers/action-sync.container";
 import { requireUser } from "@/lib/shared/infrastructure/auth.server";
 import { createSupabaseServerClient } from "@/lib/shared/infrastructure/supabase.server";
@@ -83,7 +84,7 @@ export async function addManualTask(transcriptId: string): Promise<{
   title: string;
   description: string;
   dueDate: string | null;
-  status: "draft" | "synced";
+  status: TaskStatus;
   trelloCardId: string | null;
 } | null> {
   const user = await requireUser();

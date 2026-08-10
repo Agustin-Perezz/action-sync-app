@@ -1,9 +1,11 @@
+import type { TaskStatus } from "@/domain/entities/task-status.enum";
+
 export type Task = {
   id: string;
   title: string;
   description: string;
   dueDate: string | null;
-  status: "draft" | "synced";
+  status: TaskStatus;
   trelloCardId: string | null;
 };
 
