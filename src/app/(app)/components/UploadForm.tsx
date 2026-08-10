@@ -9,14 +9,22 @@ import { UploadActions } from "./UploadActions";
 
 export function UploadForm() {
   const [rawText, setRawText] = useState("");
+  const [extractError, setExtractError] = useState<string | null>(null);
   const [isExtracting, startTransition] = useTransition();
 
   function handleExtract() {
     if (rawText.trim().length === 0) return;
+    setExtractError(null);
     startTransition(async () => {
-      // The action redirects to /review?transcript={id} on success; for
-      // anonymous visitors it redirects to /signin via requireUser().
-      await extractTasksFromText(rawText);
+      try {
+        await extractTasksFromText(rawText);
+      } catch (error) {
+        setExtractError(
+          error instanceof Error
+            ? error.message
+            : "Extraction failed. Please try again.",
+        );
+      }
     });
   }
 
@@ -44,6 +52,11 @@ export function UploadForm() {
           className="min-h-[160px] bg-card"
         />
       </div>
+      {extractError && (
+        <p role="alert" className="text-sm font-medium text-destructive">
+          {extractError}
+        </p>
+      )}
       <UploadActions isExtracting={isExtracting} onExtract={handleExtract} />
     </div>
   );

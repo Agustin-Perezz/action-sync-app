@@ -18,6 +18,7 @@ export type UseReviewTasksResult = {
   readonly boards: readonly Board[];
   readonly lists: readonly List[];
   readonly isSyncing: boolean;
+  readonly syncError: string | null;
   readonly handleChange: (updated: Task) => void;
   readonly handleDelete: (id: string) => void;
   readonly handleAddManual: () => void;
@@ -43,6 +44,7 @@ export function useReviewTasks({
   const [lists, setLists] = useState<List[]>([]);
   const [list, setList] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const handleChange = useCallback((updated: Task) => {
     setTasks((prev) =>
@@ -71,10 +73,18 @@ export function useReviewTasks({
   const handleSync = useCallback(() => {
     if (!list) return;
     setIsSyncing(true);
+    setSyncError(null);
     void syncTasksToTrello({ transcriptId, listId: list })
       .then(() => {
         setTasks((prev) =>
           prev.map((task) => ({ ...task, status: TASK_STATUS.SYNCED })),
+        );
+      })
+      .catch((error: unknown) => {
+        setSyncError(
+          error instanceof Error
+            ? error.message
+            : "Sync failed. Please try again.",
         );
       })
       .finally(() => setIsSyncing(false));
@@ -97,6 +107,7 @@ export function useReviewTasks({
     boards,
     lists,
     isSyncing,
+    syncError,
     handleChange,
     handleDelete,
     handleAddManual,
