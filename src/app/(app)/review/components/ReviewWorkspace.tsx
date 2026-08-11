@@ -33,6 +33,7 @@ export function ReviewWorkspace({
         lists={review.lists}
         isSyncing={review.isSyncing}
         syncError={review.syncError}
+        syncSuccess={review.syncSuccess}
         onBoardChange={review.setBoard}
         onListChange={review.setList}
         onSync={review.handleSync}
@@ -40,7 +41,13 @@ export function ReviewWorkspace({
       <div className="mx-auto flex max-w-3xl flex-col gap-3 px-6 py-8">
         <TaskList
           tasks={review.tasks}
-          onChange={review.handleChange}
+          editingTask={review.editingTask}
+          isSaving={review.isSaving}
+          saveError={review.saveError}
+          onStartEdit={review.startEdit}
+          onEditField={review.setEditField}
+          onCancelEdit={review.cancelEdit}
+          onSave={review.saveEdit}
           onDelete={review.handleDelete}
         />
         <AddManualTaskButton onAdd={review.handleAddManual} />

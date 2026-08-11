@@ -19,7 +19,14 @@ export type UseReviewTasksResult = {
   readonly lists: readonly List[];
   readonly isSyncing: boolean;
   readonly syncError: string | null;
-  readonly handleChange: (updated: Task) => void;
+  readonly syncSuccess: string | null;
+  readonly editingTask: Task | null;
+  readonly isSaving: boolean;
+  readonly saveError: string | null;
+  readonly startEdit: (task: Task) => void;
+  readonly setEditField: (updated: Task) => void;
+  readonly cancelEdit: () => void;
+  readonly saveEdit: () => void;
   readonly handleDelete: (id: string) => void;
   readonly handleAddManual: () => void;
   readonly handleSync: () => void;
@@ -45,18 +52,51 @@ export function useReviewTasks({
   const [list, setList] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncSuccess, setSyncSuccess] = useState<string | null>(null);
 
-  const handleChange = useCallback((updated: Task) => {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === updated.id ? updated : task)),
-    );
-    const formData = new FormData();
-    formData.set("id", updated.id);
-    formData.set("title", updated.title);
-    formData.set("description", updated.description);
-    formData.set("dueDate", updated.dueDate ?? "");
-    void updateTask(formData);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const startEdit = useCallback((task: Task) => {
+    setEditingTask({ ...task });
+    setSaveError(null);
   }, []);
+
+  const setEditField = useCallback((updated: Task) => {
+    setEditingTask(updated);
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditingTask(null);
+    setSaveError(null);
+  }, []);
+
+  const saveEdit = useCallback(() => {
+    if (!editingTask) return;
+    setIsSaving(true);
+    setSaveError(null);
+    const formData = new FormData();
+    formData.set("id", editingTask.id);
+    formData.set("title", editingTask.title);
+    formData.set("description", editingTask.description);
+    formData.set("dueDate", editingTask.dueDate ?? "");
+    void updateTask(formData)
+      .then(() => {
+        setTasks((prev) =>
+          prev.map((task) => (task.id === editingTask.id ? editingTask : task)),
+        );
+        setEditingTask(null);
+      })
+      .catch((error: unknown) => {
+        setSaveError(
+          error instanceof Error
+            ? error.message
+            : "Failed to save task. Please try again.",
+        );
+      })
+      .finally(() => setIsSaving(false));
+  }, [editingTask]);
 
   const handleDelete = useCallback((id: string) => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
@@ -74,11 +114,13 @@ export function useReviewTasks({
     if (!list) return;
     setIsSyncing(true);
     setSyncError(null);
+    setSyncSuccess(null);
     void syncTasksToTrello({ transcriptId, listId: list })
       .then(() => {
         setTasks((prev) =>
           prev.map((task) => ({ ...task, status: TASK_STATUS.SYNCED })),
         );
+        setSyncSuccess("Tasks synced to Trello successfully.");
       })
       .catch((error: unknown) => {
         setSyncError(
@@ -108,7 +150,14 @@ export function useReviewTasks({
     lists,
     isSyncing,
     syncError,
-    handleChange,
+    syncSuccess,
+    editingTask,
+    isSaving,
+    saveError,
+    startEdit,
+    setEditField,
+    cancelEdit,
+    saveEdit,
     handleDelete,
     handleAddManual,
     handleSync,
