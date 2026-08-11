@@ -14,7 +14,11 @@ import { trelloApiBaseUrl } from "@/lib/shared/infrastructure/env";
 const DUE_TIME_SUFFIX = "T09:00:00.000Z";
 
 function toTrelloDue(due: string | null): string | undefined {
-  return due === null ? undefined : `${due}${DUE_TIME_SUFFIX}`;
+  if (due === null) return undefined;
+  // DB timestamptz round-trip returns full ISO (e.g. 2024-12-31T09:00:00.000Z).
+  // Only append the suffix for bare YYYY-MM-DD dates from the AI/input fields.
+  if (due.length <= 10) return `${due}${DUE_TIME_SUFFIX}`;
+  return due;
 }
 
 function authQuery(apiKey: string, token: string): URLSearchParams {
@@ -23,6 +27,15 @@ function authQuery(apiKey: string, token: string): URLSearchParams {
 
 async function parseJson(response: Response): Promise<unknown> {
   return await response.json();
+}
+
+async function readErrorBody(response: Response): Promise<string> {
+  try {
+    const text = await response.text();
+    return text || response.statusText;
+  } catch {
+    return response.statusText;
+  }
 }
 
 export class TrelloClient implements TrelloClientPort {
@@ -35,7 +48,9 @@ export class TrelloClient implements TrelloClientPort {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) {
-      throw new TrelloConnectionError(`Trello getMember failed: ${res.status}`);
+      throw new TrelloConnectionError(
+        `Trello getMember failed: ${res.status} ${await readErrorBody(res)}`,
+      );
     }
     const body = (await parseJson(res)) as { id: string; fullName: string };
     return { id: body.id, fullName: body.fullName };
@@ -48,7 +63,9 @@ export class TrelloClient implements TrelloClientPort {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) {
-      throw new TrelloConnectionError(`Trello getBoards failed: ${res.status}`);
+      throw new TrelloConnectionError(
+        `Trello getBoards failed: ${res.status} ${await readErrorBody(res)}`,
+      );
     }
     const body = (await parseJson(res)) as Array<{ id: string; name: string }>;
     return body.map((b) => ({ id: b.id, name: b.name }));
@@ -62,7 +79,9 @@ export class TrelloClient implements TrelloClientPort {
       { headers: { Accept: "application/json" } },
     );
     if (!res.ok) {
-      throw new TrelloConnectionError(`Trello getLists failed: ${res.status}`);
+      throw new TrelloConnectionError(
+        `Trello getLists failed: ${res.status} ${await readErrorBody(res)}`,
+      );
     }
     const body = (await parseJson(res)) as Array<{ id: string; name: string }>;
     return body.map((l) => ({ id: l.id, name: l.name }));
@@ -77,14 +96,13 @@ export class TrelloClient implements TrelloClientPort {
     if (due !== undefined) {
       params.set("due", due);
     }
-    const res = await fetch(`${trelloApiBaseUrl}/cards`, {
+    const res = await fetch(`${trelloApiBaseUrl}/cards?${params}`, {
       method: "POST",
       headers: { Accept: "application/json" },
-      body: params,
     });
     if (!res.ok) {
       throw new TrelloConnectionError(
-        `Trello createCard failed: ${res.status}`,
+        `Trello createCard failed: ${res.status} ${await readErrorBody(res)}`,
       );
     }
     const body = (await parseJson(res)) as { id: string; url: string };

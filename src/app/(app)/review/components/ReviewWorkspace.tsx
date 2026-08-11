@@ -32,6 +32,7 @@ export function ReviewWorkspace({
         boards={review.boards}
         lists={review.lists}
         isSyncing={review.isSyncing}
+        syncError={review.syncError}
         onBoardChange={review.setBoard}
         onListChange={review.setList}
         onSync={review.handleSync}
