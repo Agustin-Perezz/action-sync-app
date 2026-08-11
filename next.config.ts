@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   // V8 coverage can resolve browser JS back to `src/`. Without this the LCOV
   // records `SF:` paths against bundled chunks and SonarCloud cannot map
   // coverage to source. (Server-side coverage comes from the Vitest unit layer.)
+  allowedDevOrigins: ["127.0.0.1"],
   productionBrowserSourceMaps: true,
 };
 
