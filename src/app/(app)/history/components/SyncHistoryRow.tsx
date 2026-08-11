@@ -1,7 +1,10 @@
 import { FileText } from "lucide-react";
+import Link from "next/link";
 
 import type { SyncHistoryEntry } from "../types";
 import { STATUS_LABELS, STATUS_STYLES } from "../types";
+
+const REVIEW_PATH = "/review";
 
 export type SyncHistoryRowProps = {
   readonly entry: SyncHistoryEntry;
@@ -18,7 +21,10 @@ function formatTimestamp(iso: string): string {
 
 export function SyncHistoryRow({ entry }: SyncHistoryRowProps) {
   return (
-    <div className="flex items-center justify-between gap-4 py-3">
+    <Link
+      href={`${REVIEW_PATH}?transcript=${entry.id}`}
+      className="flex items-center justify-between gap-4 py-3 transition-colors hover:bg-accent/50"
+    >
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex items-center gap-2">
           <FileText className="size-4 shrink-0 text-muted-foreground" />
@@ -41,6 +47,6 @@ export function SyncHistoryRow({ entry }: SyncHistoryRowProps) {
           {STATUS_LABELS[entry.status]}
         </span>
       </div>
-    </div>
+    </Link>
   );
 }
