@@ -12,6 +12,7 @@ export function ReviewControls({
   lists,
   isSyncing,
   syncError,
+  syncSuccess,
   onBoardChange,
   onListChange,
   onSync,
@@ -45,6 +46,9 @@ export function ReviewControls({
         <p role="alert" className="text-sm font-medium text-destructive">
           {syncError}
         </p>
+      )}
+      {syncSuccess && !syncError && (
+        <p className="text-sm font-medium text-emerald-600">{syncSuccess}</p>
       )}
     </div>
   );

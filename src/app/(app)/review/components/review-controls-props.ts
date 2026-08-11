@@ -8,6 +8,7 @@ export type ReviewControlsProps = {
   readonly lists: readonly List[];
   readonly isSyncing: boolean;
   readonly syncError: string | null;
+  readonly syncSuccess: string | null;
   readonly onBoardChange: (id: string) => void;
   readonly onListChange: (id: string) => void;
   readonly onSync: () => void;
