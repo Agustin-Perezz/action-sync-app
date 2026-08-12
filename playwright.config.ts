@@ -10,7 +10,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 1,
+  workers: process.env.CI ? 2 : undefined,
   reporter: [["list"], monocartReporter],
   use: {
     baseURL: "http://localhost:3000",
@@ -35,6 +35,8 @@ export default defineConfig({
         process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
       SUPABASE_URL: process.env.SUPABASE_URL ?? "",
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+      TRELLO_API_KEY: process.env.TRELLO_API_KEY ?? "mock-trello-api-key",
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "mock-openai-api-key",
     },
   },
 });

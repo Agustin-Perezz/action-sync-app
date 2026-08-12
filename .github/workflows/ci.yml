@@ -104,6 +104,8 @@ jobs:
           echo "SUPABASE_SERVICE_ROLE_KEY=$(supabase status -o env | grep SERVICE_ROLE_KEY | cut -d= -f2-)" >> .env.test
           echo "NEXT_PUBLIC_SUPABASE_URL=$(supabase status -o env | grep API_URL | cut -d= -f2-)" >> .env.test
           echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(supabase status -o env | grep ANON_KEY | cut -d= -f2-)" >> .env.test
+          echo "TRELLO_API_KEY=mock-trello-api-key" >> .env.test
+          echo "OPENAI_API_KEY=mock-openai-api-key" >> .env.test
       - name: Run E2E tests
         run: pnpm test:ci
       - name: Upload test report
