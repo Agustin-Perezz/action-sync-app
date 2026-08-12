@@ -21,7 +21,6 @@ test("sidebar shows amber dot on Settings when Trello not connected", async ({
     .locator("aside")
     .getByRole("link", { name: "Settings" });
   await expect(settingsLink).toBeVisible();
-  // The amber warning dot is a span inside the link
   await expect(settingsLink.locator("span.bg-amber-400")).toBeVisible();
 });
 
@@ -67,21 +66,17 @@ test("logout button redirects to signin", async ({ authenticatedPage }) => {
 test("mobile nav sheet opens and closes on navigation", async ({
   authenticatedPage,
 }) => {
-  // Set mobile viewport
   await authenticatedPage.setViewportSize({ width: 375, height: 812 });
   await authenticatedPage.goto("/");
 
-  // Open the mobile nav sheet
   await authenticatedPage
     .getByRole("button", { name: "Open navigation" })
     .click();
 
-  // Sheet should be visible with nav items
   await expect(
     authenticatedPage.getByRole("link", { name: "Sync History" }),
   ).toBeVisible();
 
-  // Click a nav item — sheet should close and page should navigate
   await authenticatedPage.getByRole("link", { name: "Sync History" }).click();
   await expect(authenticatedPage).toHaveURL("/history");
 });

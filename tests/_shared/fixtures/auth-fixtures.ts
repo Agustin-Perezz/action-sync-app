@@ -68,9 +68,6 @@ export async function signInAndGetCookies(
     throw new Error(`Failed to sign in for cookies: ${error?.message}`);
   }
 
-  // @supabase/supabase-js derives the storage key from the URL hostname's
-  // first dot-separated segment: sb-${hostname.split('.')[0]}-auth-token.
-  // For http://127.0.0.1:54321 this is sb-127-auth-token.
   const host = new URL(supabaseUrl).hostname.split(".")[0];
   const storageKey = `${AUTH_STORAGE_KEY_PREFIX}${host}${AUTH_STORAGE_KEY_SUFFIX}`;
   const value = JSON.stringify({

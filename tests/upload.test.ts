@@ -1,10 +1,5 @@
 import { expect, test } from "./_shared/app-fixtures";
 
-// The extract flow calls the real OpenAI-backed extract-tasks use case and
-// requires auth + a network stub for the AI adapter. That happy-path is out of
-// scope for the MVP E2E suite (see task 8.2). Here we assert the upload
-// surface renders.
-
 test("upload dashboard shows heading, dropzone, textarea and extract button", async ({
   authenticatedPage,
 }) => {
@@ -41,7 +36,6 @@ test("upload page shows sidebar with navigation items", async ({
 }) => {
   await authenticatedPage.goto("/");
 
-  // Desktop sidebar (aside) contains the nav links
   const sidebar = authenticatedPage.locator("aside");
   await expect(
     sidebar.getByRole("link", { name: "New Transcript" }),

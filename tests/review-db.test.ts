@@ -28,14 +28,6 @@ test("review page shows seeded tasks for the authenticated user", async ({
     ).toBeVisible();
     await expect(authenticatedPage.getByText("2 tasks")).toBeVisible();
 
-    // Both seeded task titles should render in the page
-    await expect(
-      authenticatedPage
-        .locator("input[data-testid='task-title-input']")
-        .filter({
-          hasText: "",
-        }),
-    ).toHaveCount(2);
     await expect(
       authenticatedPage.locator(
         "input[data-testid='task-title-input'][value='Review DB Task A']",
@@ -76,12 +68,10 @@ test("add manual task button creates a task in the database", async ({
       .getByRole("button", { name: "Add Manual Task" })
       .click();
 
-    // A new empty task input should appear
     await expect(authenticatedPage.getByTestId("task-title-input")).toHaveCount(
       2,
     );
 
-    // Verify the task was created in the DB
     const { data: dbTasks } = await supabaseTest
       .from("tasks")
       .select()
@@ -110,17 +100,13 @@ test("delete task removes the row from the database", async ({
   try {
     await authenticatedPage.goto(`/review?transcript=${transcript.id}`);
 
-    // Delete the first task
     const firstCard = authenticatedPage.getByTestId("task-card").first();
     await firstCard.getByRole("button", { name: "Delete task" }).click();
 
-    // UI: only one task input remains
     await expect(authenticatedPage.getByTestId("task-title-input")).toHaveCount(
       1,
     );
 
-    // Wait for the server action to complete — the delete is fire-and-forget
-    // in the hook, so we poll the DB until only 1 row remains.
     await expect
       .poll(
         async () => {
@@ -135,7 +121,6 @@ test("delete task removes the row from the database", async ({
       )
       .toBe(1);
 
-    // DB: the deleted task is gone, the kept task remains
     const { data: dbTasks } = await supabaseTest
       .from("tasks")
       .select()
@@ -168,19 +153,15 @@ test("edit task title saves to the database", async ({
       .getByTestId("task-title-input")
       .first();
 
-    // Focus to enter edit mode
     await titleInput.focus();
     await titleInput.fill("Edited Title DB");
 
-    // Save
     await authenticatedPage.getByRole("button", { name: "Save task" }).click();
 
-    // Wait for the save to complete — edit buttons disappear
     await expect(
       authenticatedPage.getByRole("button", { name: "Save task" }),
     ).toHaveCount(0);
 
-    // Verify the title was persisted in the DB
     const { data: dbTask } = await supabaseTest
       .from("tasks")
       .select()

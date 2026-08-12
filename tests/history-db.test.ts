@@ -29,7 +29,6 @@ test("history page shows seeded transcripts with task counts and status", async 
   try {
     await authenticatedPage.goto("/history");
 
-    // Both transcript titles should appear
     await expect(
       authenticatedPage.getByText(`${RUN_ID}-hist-1-transcript`),
     ).toBeVisible();
@@ -37,12 +36,9 @@ test("history page shows seeded transcripts with task counts and status", async 
       authenticatedPage.getByText(`${RUN_ID}-hist-2-transcript`),
     ).toBeVisible();
 
-    // Task counts
     await expect(authenticatedPage.getByText("3 tasks")).toBeVisible();
     await expect(authenticatedPage.getByText("1 tasks")).toBeVisible();
 
-    // Status pills — reviewing → Pending, completed with all synced → Synced
-    // But our seeded tasks are "draft", so completed → Pending (draft > 0)
     await expect(authenticatedPage.getByText("Pending").first()).toBeVisible();
   } finally {
     await cleanupTestData(supabaseTest, testUser.id);
@@ -80,7 +76,6 @@ test("history page links to review page with transcript id", async ({
 test("history page shows empty state when user has no transcripts", async ({
   authenticatedPage,
 }) => {
-  // No seeding — fresh user has no transcripts
   await authenticatedPage.goto("/history");
 
   await expect(authenticatedPage.getByText("No syncs yet")).toBeVisible();
