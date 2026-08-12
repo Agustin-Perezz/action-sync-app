@@ -59,6 +59,7 @@ export class TrelloClient implements TrelloClientPort {
   async getBoards(token: string): Promise<TrelloBoard[]> {
     const params = authQuery(this.apiKey, token);
     params.set("fields", "name");
+    params.set("filter", "open");
     const res = await fetch(`${trelloApiBaseUrl}/members/me/boards?${params}`, {
       headers: { Accept: "application/json" },
     });

@@ -26,6 +26,7 @@ export function BoardSelector({
   onSelect,
 }: BoardSelectorProps) {
   const selectedName = options.find((option) => option.id === value)?.name;
+  const hasValue = value !== null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -33,6 +34,7 @@ export function BoardSelector({
       >
         <span className="text-muted-foreground">{label}:</span>
         <span className="font-medium">{selectedName ?? label}</span>
+        {!hasValue && <span className="size-2 rounded-full bg-amber-400" />}
         <ChevronDown className="size-3.5 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

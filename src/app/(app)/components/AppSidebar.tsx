@@ -3,10 +3,11 @@ import { LayoutGrid } from "lucide-react";
 import { SidebarNav } from "./SidebarNav";
 
 type AppSidebarProps = {
+  readonly trelloConnected: boolean;
   readonly onNavigate?: () => void;
 };
 
-export function AppSidebar({ onNavigate }: AppSidebarProps) {
+export function AppSidebar({ trelloConnected, onNavigate }: AppSidebarProps) {
   return (
     <div className="flex h-full flex-col gap-6 px-3 py-5">
       <div className="flex items-center gap-2 px-2">
@@ -17,7 +18,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
           ActionSync
         </span>
       </div>
-      <SidebarNav onNavigate={onNavigate} />
+      <SidebarNav trelloConnected={trelloConnected} onNavigate={onNavigate} />
     </div>
   );
 }

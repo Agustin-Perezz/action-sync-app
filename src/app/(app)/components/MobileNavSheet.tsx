@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +13,15 @@ import {
 } from "@/components/ui/sheet";
 import { AppSidebar } from "./AppSidebar";
 
-export function MobileNavSheet() {
+export type MobileNavSheetProps = {
+  readonly trelloConnected: boolean;
+};
+
+export function MobileNavSheet({ trelloConnected }: MobileNavSheetProps) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={
           <Button
@@ -31,7 +38,10 @@ export function MobileNavSheet() {
         <SheetHeader className="border-b">
           <SheetTitle>ActionSync</SheetTitle>
         </SheetHeader>
-        <AppSidebar />
+        <AppSidebar
+          trelloConnected={trelloConnected}
+          onNavigate={() => setOpen(false)}
+        />
       </SheetContent>
     </Sheet>
   );

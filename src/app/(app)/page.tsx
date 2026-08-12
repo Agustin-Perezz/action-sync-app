@@ -1,6 +1,10 @@
+import { TrelloConnectionBanner } from "./components/TrelloConnectionBanner";
 import { UploadForm } from "./components/UploadForm";
+import { getTrelloConnectionStatus } from "./lib/trello-connection";
 
-export default function UploadDashboardPage() {
+export default async function UploadDashboardPage() {
+  const connection = await getTrelloConnectionStatus();
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col px-6 py-16">
       <header className="mb-8">
@@ -10,6 +14,7 @@ export default function UploadDashboardPage() {
           actionable tasks.
         </p>
       </header>
+      <TrelloConnectionBanner connected={connection.connected} />
       <UploadForm />
     </div>
   );
