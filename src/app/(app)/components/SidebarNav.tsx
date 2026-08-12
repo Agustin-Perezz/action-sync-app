@@ -7,10 +7,11 @@ import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav-items";
 
 type SidebarNavProps = {
+  readonly trelloConnected?: boolean;
   readonly onNavigate?: () => void;
 };
 
-export function SidebarNav({ onNavigate }: SidebarNavProps) {
+export function SidebarNav({ trelloConnected, onNavigate }: SidebarNavProps) {
   const pathname = usePathname();
 
   return (
@@ -19,6 +20,7 @@ export function SidebarNav({ onNavigate }: SidebarNavProps) {
         const active =
           item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         const Icon = item.icon;
+        const showWarning = item.href === "/settings" && !trelloConnected;
         return (
           <Link
             key={item.href}
@@ -33,6 +35,9 @@ export function SidebarNav({ onNavigate }: SidebarNavProps) {
           >
             <Icon className="size-4" />
             {item.label}
+            {showWarning && (
+              <span className="ml-auto size-2 rounded-full bg-amber-400" />
+            )}
           </Link>
         );
       })}
