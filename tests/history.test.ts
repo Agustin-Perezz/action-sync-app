@@ -5,14 +5,16 @@ import { expect, test } from "./_shared/app-fixtures";
 // seeded transcript + Trello sync and is out of scope for the MVP E2E suite
 // (task 8.2).
 
-test("sync history page shows heading and empty state", async ({ page }) => {
-  await page.goto("/history");
+test("sync history page shows heading and empty state", async ({
+  authenticatedPage,
+}) => {
+  await authenticatedPage.goto("/history");
 
   await expect(
-    page.getByRole("heading", { name: "Sync History" }),
+    authenticatedPage.getByRole("heading", { name: "Sync History" }),
   ).toBeVisible();
-  await expect(page.getByText("No syncs yet")).toBeVisible();
+  await expect(authenticatedPage.getByText("No syncs yet")).toBeVisible();
   await expect(
-    page.getByText("Upload a transcript to get started."),
+    authenticatedPage.getByText("Upload a transcript to get started."),
   ).toBeVisible();
 });

@@ -6,13 +6,29 @@ import { expect, test } from "./_shared/app-fixtures";
 // suite (see task 8.2).
 
 test("review page shows heading and zero-task state for authenticated visitor", async ({
-  page,
+  authenticatedPage,
 }) => {
-  await page.goto("/review");
+  await authenticatedPage.goto("/review");
 
   await expect(
-    page.getByRole("heading", { name: "Review extracted tasks" }),
+    authenticatedPage.getByRole("heading", { name: "Review extracted tasks" }),
   ).toBeVisible();
-  await expect(page.getByText("0 tasks")).toBeVisible();
-  await expect(page.getByTestId("task-title-input")).toHaveCount(0);
+  await expect(authenticatedPage.getByText("0 tasks")).toBeVisible();
+  await expect(authenticatedPage.getByTestId("task-title-input")).toHaveCount(
+    0,
+  );
+});
+
+test("review page shows board and list selectors with amber dot indicators", async ({
+  authenticatedPage,
+}) => {
+  await authenticatedPage.goto("/review");
+
+  await expect(
+    authenticatedPage.getByRole("button", { name: "Board" }),
+  ).toBeVisible();
+  await expect(
+    authenticatedPage.getByRole("button", { name: "List" }),
+  ).toBeVisible();
+  await expect(authenticatedPage.getByText("Sync to Trello")).toBeVisible();
 });

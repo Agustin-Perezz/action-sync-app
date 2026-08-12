@@ -6,20 +6,48 @@ import { expect, test } from "./_shared/app-fixtures";
 // surface renders.
 
 test("upload dashboard shows heading, dropzone, textarea and extract button", async ({
-  page,
+  authenticatedPage,
 }) => {
-  await page.goto("/");
+  await authenticatedPage.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "New Transcript" }),
+    authenticatedPage.getByRole("heading", { name: "New Transcript" }),
   ).toBeVisible();
   await expect(
-    page.getByText("Drag a .txt file or click to browse"),
+    authenticatedPage.getByText("Drag a .txt file or click to browse"),
   ).toBeVisible();
   await expect(
-    page.getByPlaceholder("Paste your meeting transcript here…"),
+    authenticatedPage.getByPlaceholder("Paste your meeting transcript here…"),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Extract Tasks" }),
+    authenticatedPage.getByRole("button", { name: "Extract Tasks" }),
   ).toBeVisible();
+});
+
+test("upload page shows Trello connection banner when not connected", async ({
+  authenticatedPage,
+}) => {
+  await authenticatedPage.goto("/");
+
+  await expect(
+    authenticatedPage.getByText(
+      "Trello not connected — link your account in Settings to sync tasks.",
+    ),
+  ).toBeVisible();
+});
+
+test("upload page shows sidebar with navigation items", async ({
+  authenticatedPage,
+}) => {
+  await authenticatedPage.goto("/");
+
+  // Desktop sidebar (aside) contains the nav links
+  const sidebar = authenticatedPage.locator("aside");
+  await expect(
+    sidebar.getByRole("link", { name: "New Transcript" }),
+  ).toBeVisible();
+  await expect(
+    sidebar.getByRole("link", { name: "Sync History" }),
+  ).toBeVisible();
+  await expect(sidebar.getByRole("link", { name: "Settings" })).toBeVisible();
 });
