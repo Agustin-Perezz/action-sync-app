@@ -7,10 +7,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { extractTasksFromText } from "../actions";
 import { UploadActions } from "./UploadActions";
 
+const ACCEPTED_EXTENSIONS = [".txt"] as const;
+const ACCEPTED_MIME_TYPES = ["text/plain"] as const;
+
 export function UploadForm() {
   const [rawText, setRawText] = useState("");
   const [extractError, setExtractError] = useState<string | null>(null);
   const [isExtracting, startTransition] = useTransition();
+
+  function handleFilesSelected(files: File[]) {
+    const file = files[0];
+    if (!file) return;
+    file
+      .text()
+      .then(setRawText)
+      .catch(() => {
+        setExtractError("Failed to read file. Please try pasting the text.");
+      });
+  }
 
   function handleExtract() {
     if (rawText.trim().length === 0) return;
@@ -31,8 +45,10 @@ export function UploadForm() {
   return (
     <div className="flex flex-col gap-6">
       <FileDropzone
-        onFilesSelected={() => undefined}
-        accept={{ "text/plain": [".txt"] }}
+        onFilesSelected={handleFilesSelected}
+        accept={Object.fromEntries(
+          ACCEPTED_MIME_TYPES.map((mime) => [mime, [...ACCEPTED_EXTENSIONS]]),
+        )}
         multiple={false}
         label="Drag a .txt file or click to browse"
         description="Meeting transcripts only"

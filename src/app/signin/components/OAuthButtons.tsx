@@ -15,14 +15,6 @@ export function OAuthButtons() {
       >
         Continue with Google
       </Button>
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        onClick={() => signInWithOAuthAction(OAuthProvider.Facebook)}
-      >
-        Continue with Facebook
-      </Button>
     </div>
   );
 }
