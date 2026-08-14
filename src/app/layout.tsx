@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://action-sync-app.vercel.app"),
   title: "ActionSync — Trello Workflow Router",
   description:
     "Upload meeting transcripts, extract tasks with AI, sync to Trello.",
