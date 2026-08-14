@@ -1,5 +1,9 @@
 project_id = "action-sync"
 
+[auth]
+site_url = "https://action-sync-app.vercel.app"
+additional_redirect_urls = ["https://action-sync-app.vercel.app/auth/callback", "https://action-sync-app.vercel.app/trello/callback", "http://localhost:3000/auth/callback", "http://localhost:3000/trello/callback"]
+
 [auth.external.google]
 enabled = true
 client_id = "471969374330-kk047nskiuhrr783q08n0r0a0007md6m.apps.googleusercontent.com"
