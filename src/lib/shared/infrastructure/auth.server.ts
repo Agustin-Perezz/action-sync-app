@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/shared/infrastructure/supabase.server";
 import { AUTH_CALLBACK_PATH, HOME_PATH, SIGNIN_PATH } from "./auth-paths";
 
@@ -27,8 +28,14 @@ export async function getUser(): Promise<User | null> {
   };
 }
 
+// ponytail: per-request dedup — layout + page + trello-connection all call
+// getUser()/requireUser() on the same request. Without cache() that's 4
+// auth.getUser() round trips to remote Supabase per page load (~1.6s on
+// Vercel). cache() collapses them to one. Same fix applied to requireUser.
+export const getCachedUser = cache(getUser);
+
 export async function requireUser(): Promise<User> {
-  const user = await getUser();
+  const user = await getCachedUser();
 
   if (!user) {
     redirect(SIGNIN_PATH);
