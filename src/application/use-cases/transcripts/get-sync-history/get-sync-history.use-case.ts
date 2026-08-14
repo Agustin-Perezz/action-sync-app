@@ -10,23 +10,26 @@ export class GetSyncHistoryUseCase {
     const transcripts = await this.repository.findTranscriptsByUserId(
       dto.userId,
     );
+
     if (transcripts.length === 0) {
       return [];
     }
-    const entries = await Promise.all(
-      transcripts.map(async (t) => {
-        const counts = await this.repository.countTasksByTranscript(t.id);
-        return toHistoryEntry(
-          {
-            id: t.id,
-            title: t.title,
-            createdAt: t.createdAt,
-            status: t.status,
-          },
-          counts,
-        );
-      }),
+
+    const countsByTranscript = await this.repository.countTasksByTranscriptIds(
+      transcripts.map((t) => t.id),
     );
-    return entries;
+
+    return transcripts.map((t) => {
+      const counts = countsByTranscript.get(t.id) ?? { draft: 0, synced: 0 };
+      return toHistoryEntry(
+        {
+          id: t.id,
+          title: t.title,
+          createdAt: t.createdAt,
+          status: t.status,
+        },
+        counts,
+      );
+    });
   }
 }

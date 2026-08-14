@@ -27,27 +27,44 @@ export class SupabaseGetSyncHistoryRepository
     return data.map((row) => transcriptMapper.toDomain(row));
   }
 
-  async countTasksByTranscript(transcriptId: string): Promise<TaskCounts> {
-    const { count: draftCount, error: draftError } = await this.supabase
-      .from("tasks")
-      .select("*", { count: "exact", head: true })
-      .eq("transcript_id", transcriptId)
-      .eq("status", TASK_STATUS.DRAFT);
+  async countTasksByTranscriptIds(
+    transcriptIds: readonly string[],
+  ): Promise<Map<string, TaskCounts>> {
+    const [draftResult, syncedResult] = await Promise.all([
+      this.supabase
+        .from("tasks")
+        .select("transcript_id")
+        .in("transcript_id", [...transcriptIds])
+        .eq("status", TASK_STATUS.DRAFT),
+      this.supabase
+        .from("tasks")
+        .select("transcript_id")
+        .in("transcript_id", [...transcriptIds])
+        .eq("status", TASK_STATUS.SYNCED),
+    ]);
 
-    if (draftError) {
-      throw new Error(`Failed to count draft tasks: ${draftError.message}`);
+    if (draftResult.error) {
+      throw new Error(
+        `Failed to count draft tasks: ${draftResult.error.message}`,
+      );
+    }
+    if (syncedResult.error) {
+      throw new Error(
+        `Failed to count synced tasks: ${syncedResult.error.message}`,
+      );
     }
 
-    const { count: syncedCount, error: syncedError } = await this.supabase
-      .from("tasks")
-      .select("*", { count: "exact", head: true })
-      .eq("transcript_id", transcriptId)
-      .eq("status", TASK_STATUS.SYNCED);
-
-    if (syncedError) {
-      throw new Error(`Failed to count synced tasks: ${syncedError.message}`);
+    const result = new Map<string, TaskCounts>();
+    for (const row of draftResult.data) {
+      const existing = result.get(row.transcript_id) ?? { draft: 0, synced: 0 };
+      existing.draft += 1;
+      result.set(row.transcript_id, existing);
     }
-
-    return { draft: draftCount ?? 0, synced: syncedCount ?? 0 };
+    for (const row of syncedResult.data) {
+      const existing = result.get(row.transcript_id) ?? { draft: 0, synced: 0 };
+      existing.synced += 1;
+      result.set(row.transcript_id, existing);
+    }
+    return result;
   }
 }

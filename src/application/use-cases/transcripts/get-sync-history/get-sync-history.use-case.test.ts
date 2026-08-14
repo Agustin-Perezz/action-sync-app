@@ -102,13 +102,13 @@ describe("GetSyncHistoryUseCase", () => {
         "Older",
       ),
     ];
+    const counts = new Map([
+      ["00000000-0000-4000-8000-000000000001", { draft: 2, synced: 0 }],
+      ["00000000-0000-4000-8000-000000000002", { draft: 0, synced: 3 }],
+    ]);
     const repository: GetSyncHistoryRepository = {
       findTranscriptsByUserId: vi.fn().mockResolvedValue(transcripts),
-      countTasksByTranscript: vi.fn(async (id) =>
-        id === "00000000-0000-4000-8000-000000000001"
-          ? { draft: 2, synced: 0 }
-          : { draft: 0, synced: 3 },
-      ),
+      countTasksByTranscriptIds: vi.fn().mockResolvedValue(counts),
     };
     const useCase = new GetSyncHistoryUseCase(repository);
 
@@ -133,14 +133,13 @@ describe("GetSyncHistoryUseCase", () => {
   it("returns an empty array when the user has no transcripts", async () => {
     const repository: GetSyncHistoryRepository = {
       findTranscriptsByUserId: vi.fn().mockResolvedValue([]),
-      countTasksByTranscript: vi.fn(),
+      countTasksByTranscriptIds: vi.fn().mockResolvedValue(new Map()),
     };
     const useCase = new GetSyncHistoryUseCase(repository);
 
     const result = await useCase.execute({ userId: USER_ID });
 
     expect(result).toEqual([]);
-    expect(repository.countTasksByTranscript).not.toHaveBeenCalled();
   });
 
   it("marks a zero-task completed transcript as synced", async () => {
@@ -154,9 +153,7 @@ describe("GetSyncHistoryUseCase", () => {
     ];
     const repository: GetSyncHistoryRepository = {
       findTranscriptsByUserId: vi.fn().mockResolvedValue(transcripts),
-      countTasksByTranscript: vi
-        .fn()
-        .mockResolvedValue({ draft: 0, synced: 0 }),
+      countTasksByTranscriptIds: vi.fn().mockResolvedValue(new Map()),
     };
     const useCase = new GetSyncHistoryUseCase(repository);
 
@@ -177,9 +174,7 @@ describe("GetSyncHistoryUseCase", () => {
     ];
     const repository: GetSyncHistoryRepository = {
       findTranscriptsByUserId: vi.fn().mockResolvedValue(transcripts),
-      countTasksByTranscript: vi
-        .fn()
-        .mockResolvedValue({ draft: 0, synced: 0 }),
+      countTasksByTranscriptIds: vi.fn().mockResolvedValue(new Map()),
     };
     const useCase = new GetSyncHistoryUseCase(repository);
 
