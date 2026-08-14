@@ -15,10 +15,10 @@ export class GetReviewDataUseCase {
   async execute(
     dto: GetReviewDataRequestDto,
   ): Promise<GetReviewDataResponseDto> {
-    const tasks = await this.repository.findDraftTasksByTranscript(
-      dto.transcriptId,
-    );
-    const connection = await this.repository.findTrelloConnection(dto.userId);
+    const [tasks, connection] = await Promise.all([
+      this.repository.findDraftTasksByTranscript(dto.transcriptId),
+      this.repository.findTrelloConnection(dto.userId),
+    ]);
     const boards: TrelloBoard[] = connection
       ? await this.trelloClient.getBoards(connection.accessToken)
       : [];
