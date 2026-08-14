@@ -1,10 +1,9 @@
+import { Suspense } from "react";
 import { TrelloConnectionBanner } from "./components/TrelloConnectionBanner";
 import { UploadForm } from "./components/UploadForm";
 import { getTrelloConnectionStatus } from "./lib/trello-connection";
 
-export default async function UploadDashboardPage() {
-  const connection = await getTrelloConnectionStatus();
-
+export default function UploadDashboardPage() {
   return (
     <div className="mx-auto flex max-w-2xl flex-col px-6 py-16">
       <header className="mb-8">
@@ -14,8 +13,15 @@ export default async function UploadDashboardPage() {
           actionable tasks.
         </p>
       </header>
-      <TrelloConnectionBanner connected={connection.connected} />
+      <Suspense fallback={null}>
+        <TrelloBannerLoader />
+      </Suspense>
       <UploadForm />
     </div>
   );
+}
+
+async function TrelloBannerLoader() {
+  const connection = await getTrelloConnectionStatus();
+  return <TrelloConnectionBanner connected={connection.connected} />;
 }
