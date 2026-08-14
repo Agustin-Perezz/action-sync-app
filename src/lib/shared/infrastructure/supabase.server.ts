@@ -1,9 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import type { Database } from "@/infrastructure/database/postgres/database.types";
 import { supabasePublishableKey, supabaseUrl } from "./env";
 
-export async function createSupabaseServerClient() {
+async function buildSupabaseServerClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(supabaseUrl, supabasePublishableKey, {
@@ -19,3 +20,7 @@ export async function createSupabaseServerClient() {
     },
   });
 }
+
+// ponytail: one client per request — getUser/requireUser/trello-connection
+// all share the same SupabaseClient instead of constructing 3+ instances.
+export const createSupabaseServerClient = cache(buildSupabaseServerClient);
