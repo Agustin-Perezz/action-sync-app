@@ -7,26 +7,22 @@ export class GetSyncHistoryUseCase {
   constructor(private readonly repository: GetSyncHistoryRepository) {}
 
   async execute(dto: GetSyncHistoryRequestDto): Promise<SyncHistoryEntry[]> {
-    const transcripts = await this.repository.findTranscriptsByUserId(
-      dto.userId,
-    );
-    if (transcripts.length === 0) {
-      return [];
-    }
-    const entries = await Promise.all(
-      transcripts.map(async (t) => {
-        const counts = await this.repository.countTasksByTranscript(t.id);
-        return toHistoryEntry(
-          {
-            id: t.id,
-            title: t.title,
-            createdAt: t.createdAt,
-            status: t.status,
-          },
-          counts,
-        );
-      }),
-    );
-    return entries;
+    const [transcripts, countsByTranscript] = await Promise.all([
+      this.repository.findTranscriptsByUserId(dto.userId),
+      this.repository.countTasksByUserTranscripts(dto.userId),
+    ]);
+
+    return transcripts.map((t) => {
+      const counts = countsByTranscript.get(t.id) ?? { draft: 0, synced: 0 };
+      return toHistoryEntry(
+        {
+          id: t.id,
+          title: t.title,
+          createdAt: t.createdAt,
+          status: t.status,
+        },
+        counts,
+      );
+    });
   }
 }
