@@ -1,9 +1,17 @@
-# next-supabase-scaffold
+# ActionSync
 
 [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Agustin-Perezz_action-sync-app&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Agustin-Perezz_action-sync-app)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Agustin-Perezz_action-sync-app&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Agustin-Perezz_action-sync-app)
 
-A production-ready [Next.js](https://nextjs.org) starter structured around Clean Architecture with strict layering — domain entities and Zod invariant schemas at the core, application use cases depending only on repository interfaces, infrastructure providing Supabase-backed implementations, and the App Router delivery layer composing per-request DI containers rather than module-level singletons. Dependencies point inward toward the domain, so framework and I/O concerns stay at the edges. The scaffold takes a shift-left approach to quality: linting, type checking, static analysis, and E2E tests run on every push and pull request so issues surface as early as possible in the development cycle.
+Upload meeting transcripts, extract actionable tasks with AI, review and edit them, and sync to Trello. Built on Next.js (App Router) with Supabase, Clean Architecture, and Playwright E2E.
+
+## How it works
+
+1. **Upload** — Paste a `.txt` meeting transcript or drag a file into the dropzone.
+2. **Extract** — OpenAI parses the transcript and creates draft tasks (title, description, due date).
+3. **Review** — Edit task titles, descriptions, and due dates. Add manual tasks or delete irrelevant ones.
+4. **Sync** — Pick a Trello board and list, then sync all draft tasks as Trello cards.
+5. **History** — Every transcript appears in the sync history with task counts and status pills.
 
 ## Tech Stack
 
@@ -17,8 +25,11 @@ A production-ready [Next.js](https://nextjs.org) starter structured around Clean
 | Forms           | react-hook-form + zod                          |
 | Database        | Supabase (Postgres + Auth + Storage)           |
 | Supabase client | `@supabase/ssr` (cookie-based SSR auth)        |
+| AI              | Vercel AI SDK + OpenAI (`gpt-4o`)              |
+| Trello          | Trello REST API (client-token OAuth)           |
 | Lint / Format   | Biome 2                                        |
-| E2E             | Playwright (Chromium) + Monocart Reporter    |
+| E2E             | Playwright (Chromium) + Monocart Reporter      |
+| Unit            | Vitest (V8 coverage)                           |
 | Monitoring      | Sentry (`@sentry/nextjs`)                      |
 | Security scan   | Snyk (SARIF → GitHub Code Scanning)            |
 | Code quality    | SonarCloud (static analysis + Quality Gate)    |
@@ -28,46 +39,40 @@ A production-ready [Next.js](https://nextjs.org) starter structured around Clean
 ## Folder Structure
 
 ```
-next-supabase-scaffold/
-├── .github/
-│   └── workflows/
-│       └── ci.yml                # SonarQube, lint, typecheck, E2E, build, Snyk pipeline
-├── docs/                         # Engineering guidelines
-│   ├── 01_COMPONENT-PATTERNS.md
-│   ├── 02_FRONTEND-FOLDER-STRUCTURE.md
-│   ├── 03_TYPESCRIPT-STANDARDS.md
-│   └── 04_ARCHITECTURE.md
-├── public/                       # Static assets served at root
+action-sync-app/
+├── .github/workflows/ci.yml        # Lint, E2E, build, Sonar, Snyk pipeline
+├── docs/                           # Engineering guidelines
 ├── src/
-│   ├── domain/                   # Pure entities + Zod invariant schemas (zero framework deps)
-│   │   └── entities/
-│   ├── application/              # Use cases, repository interfaces, request/response DTOs
+│   ├── domain/                     # Pure entities + Zod schemas (task, transcript, trello-connection)
+│   ├── application/                # Use cases + repository interfaces + DTOs
 │   │   └── use-cases/
-│   ├── infrastructure/           # Supabase repos, DB row aliases, mappers (one per entity), generated types
-│   │   └── database/
-│   │       └── postgres/
+│   │       ├── auth/               # Magic link + OAuth
+│   │       ├── tasks/              # Add, delete, update, sync to Trello
+│   │       ├── transcripts/        # Extract tasks, get review data, sync history
+│   │       └── trello/             # Connect, disconnect, get connection
+│   ├── infrastructure/             # Supabase repos, Trello client, OpenAI adapter, mappers
 │   ├── lib/
-│   │   ├── containers/           # DI wiring (use cases ↔ concrete repositories)
-│   │   ├── shared/
-│   │   │   └── infrastructure/  # Supabase server/browser clients, env validation, auth helpers
-│   │   └── utils.ts
-│   ├── app/                      # App Router routes (pages, layouts, actions, proxy)
-│   │   └── books/                # Sample Books feature (page, actions, components)
-│   ├── components/
-│   │   └── ui/                   # Reusable base-ui / shadcn primitives
-│   └── proxy.ts                  # Session refresh via @supabase/ssr (formerly middleware.ts)
-├── tests/                        # Playwright E2E specs + shared fixtures
-├── playwright.config.ts          # Playwright config (monocart reporter, V8 coverage)
-├── playwright.monocart-reporter.ts  # Monocart coverage + report config
-├── biome.json                    # Linter & formatter config
-├── sonar-project.properties       # SonarCloud analysis configuration
-├── next.config.ts                # Next.js configuration
-├── package.json
+│   │   ├── containers/             # DI wiring (use cases ↔ concrete repos)
+│   │   └── shared/infrastructure/  # Supabase clients, env validation, auth helpers
+│   ├── app/                        # App Router delivery layer
+│   │   ├── (app)/                  # Protected routes (layout guards via requireUser)
+│   │   │   ├── page.tsx            # Upload dashboard
+│   │   │   ├── review/             # Task review workspace
+│   │   │   ├── history/            # Sync history list
+│   │   │   └── settings/           # Trello connection settings
+│   │   ├── signin/                 # Magic link + OAuth sign-in
+│   │   ├── auth/callback/          # OAuth code exchange redirect
+│   │   └── trello/callback/        # Trello token capture (fragment)
+│   ├── components/ui/              # base-ui / shadcn primitives
+│   └── proxy.ts                    # Session refresh middleware
+├── tests/                          # Playwright E2E specs + fixtures
+├── supabase/migrations/            # Schema (trello_connections, transcripts, tasks + RLS)
 ├── playwright.config.ts
-└── tsconfig.json                 # Path alias: @/* -> ./src/*
+├── vitest.config.ts
+└── sonar-project.properties
 ```
 
-See [`AGENTS.md`](./AGENTS.md) for the engineering conventions agents and contributors should follow.
+See [`AGENTS.md`](./AGENTS.md) for engineering conventions.
 
 ## Setup
 
@@ -82,11 +87,20 @@ See [`AGENTS.md`](./AGENTS.md) for the engineering conventions agents and contri
    | Variable                                | Description                          |
    | --------------------------------------- | ------------------------------------ |
    | `NEXT_PUBLIC_SUPABASE_URL`              | Supabase project URL                 |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`  | Supabase publishable (anon) key      |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`  | Supabase publishable key             |
+   | `TRELLO_API_KEY`                        | Trello API key (from trello.com/power-ups) |
+   | `OPENAI_API_KEY`                        | OpenAI API key                       |
    | `NEXT_PUBLIC_SENTRY_DSN`                | Sentry DSN (client + server)         |
-   | `SENTRY_AUTH_TOKEN`                     | Sentry auth token for source map upload |
-   | `SENTRY_ORG`                            | Sentry organization slug              |
-   | `SENTRY_PROJECT`                        | Sentry project slug                   |
+   | `SENTRY_AUTH_TOKEN`                     | Sentry auth token for source maps    |
+   | `SENTRY_ORG`                            | Sentry organization slug             |
+   | `SENTRY_PROJECT`                        | Sentry project slug                  |
+
+   Optional config values (have defaults):
+
+   | Variable               | Default                  |
+   | ---------------------- | ------------------------ |
+   | `TRELLO_API_BASE_URL`  | `https://api.trello.com/1` |
+   | `AI_MODEL`             | `gpt-4o`                 |
 
 2. Install dependencies and Playwright browsers:
 
@@ -95,7 +109,14 @@ See [`AGENTS.md`](./AGENTS.md) for the engineering conventions agents and contri
    pnpm test:install
    ```
 
-3. Start the dev server:
+3. Start local Supabase:
+
+   ```bash
+   supabase start
+   supabase db reset
+   ```
+
+4. Start the dev server:
 
    ```bash
    pnpm dev
@@ -106,138 +127,109 @@ The app runs at [http://localhost:3000](http://localhost:3000).
 ### Supabase Local Development
 
 ```bash
-supabase start                          # Start local Supabase stack
-supabase db pull                         # Pull remote schema into a new local migration
-supabase migration new <name>            # Create a blank migration file
-supabase db push                         # Apply local migrations to the linked project
-supabase gen types --typescript --project-id <ref>  # Regenerate src/infrastructure/database/postgres/database.types.ts
-supabase stop                            # Stop local stack
+supabase start                                # Start local Supabase stack
+supabase db reset                              # Apply migrations + seed
+supabase migration new <name>                  # Create a blank migration
+supabase db push                               # Apply migrations to linked project
+supabase gen types --lang typescript --local   # Regenerate database.types.ts
+supabase stop                                  # Stop local stack
 ```
 
 ## Scripts
 
-| Script              | Description                              |
-| ------------------- | ---------------------------------------- |
-| `pnpm dev`          | Start development server                  |
-| `pnpm build`        | Production build                         |
-| `pnpm start`        | Start production server                  |
-| `pnpm lint`         | Run Biome lint & format checks           |
-| `pnpm format`       | Auto-format with Biome                   |
-| `pnpm typecheck`    | Run TypeScript type checking (`tsc --noEmit`) |
-| `pnpm test`         | Reset DB + run Playwright E2E tests       |
-| `pnpm test:ui`      | Reset DB + run Playwright in UI mode      |
-| `pnpm test:ci`      | Run Playwright only (no DB reset, for CI) |
-| `pnpm test:install` | Install Playwright Chromium browser       |
-| `pnpm test:show-report`     | Open Monocart HTML test report   |
-| `pnpm coverage:show-report` | Open V8 coverage report          |
+| Script                    | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `pnpm dev`                | Start development server                        |
+| `pnpm build`              | Production build                                |
+| `pnpm start`              | Start production server                         |
+| `pnpm lint`               | Biome lint & format checks                      |
+| `pnpm format`             | Auto-format with Biome                          |
+| `pnpm typecheck`          | TypeScript type checking (`tsc --noEmit`)       |
+| `pnpm test`               | Playwright E2E tests                            |
+| `pnpm test:reset`         | Reset DB + run E2E tests                        |
+| `pnpm test:ui`            | Playwright in UI mode                           |
+| `pnpm test:ci`            | Playwright only (for CI, no DB reset)           |
+| `pnpm test:install`       | Install Playwright Chromium browser             |
+| `pnpm test:unit`          | Vitest unit tests (no Supabase needed)          |
+| `pnpm test:unit:coverage` | Vitest + V8 coverage → `coverage/unit/lcov.info` |
+| `pnpm test:show-report`   | Open Monocart HTML test report                  |
+| `pnpm supabase:start`     | Start local Supabase                            |
+| `pnpm supabase:stop`      | Stop local Supabase                             |
+| `pnpm supabase:reset`     | Reset local Supabase database                   |
+| `pnpm supabase:gen-types` | Regenerate `database.types.ts` from local schema |
 
 ## Architecture
 
-This project follows Clean Architecture with strict layering. See [Architecture](./docs/04_ARCHITECTURE.md) for the full guide.
+Clean Architecture with strict layering — dependencies point inward toward the domain.
 
 ```
 src/
 ├── domain/            # Pure entities + Zod invariant schemas (zero framework deps)
 ├── application/       # Use cases, repository interfaces, request/response DTOs
-├── infrastructure/    # Supabase repos, DB row aliases, mappers (one per entity), generated types
+├── infrastructure/    # Supabase repos, Trello client, OpenAI adapter, mappers
 ├── lib/containers/    # DI wiring (use cases ↔ concrete repositories)
-└── app/               # Delivery layer (Server Components, Server Actions, UI components)
+└── app/               # Delivery layer (Server Components, Server Actions, UI)
 ```
+
+See [Architecture](./docs/04_ARCHITECTURE.md) for the full guide.
 
 ## Testing
 
-The project has two complementary test layers, mapped to SonarCloud coverage:
+Two complementary test layers:
 
-- **Unit tests (Vitest)** — cover the pure Clean Architecture core (use-cases, schemas/DTOs, mappers, utilities) and the server/Supabase code that browser coverage cannot see (Server Actions, route handlers, repositories). Fast feedback, runs locally with no Supabase.
-- **E2E tests (Playwright)** — Chromium-only, with V8 client-side coverage via the Monocart Reporter. Covers routes and client-rendered components end-to-end.
+- **Unit tests (Vitest)** — Clean Architecture core: use-cases, entity validation, mappers. Fast, no Supabase needed. Fake repos via `*.repository.interface.ts` ports.
+- **E2E tests (Playwright)** — Full browser-driven tests against local Supabase. Auth fixtures create real users per test and inject session cookies. DB-integration tests seed real data via service role and assert mutations hit the database.
 
-> **Why two layers?** Playwright's browser V8 coverage only captures client-side JS. Server Components, server actions, route handlers, middleware, and the Postgres/Supabase repositories execute on the server and are invisible to it. Vitest covers that surface; Playwright covers the rest. SonarCloud merges both LCOVs.
-
-### Unit tests
-
-```bash
-pnpm test:unit            # run once
-pnpm test:unit:coverage   # run with V8 coverage → coverage/unit/lcov.info
-```
-
-Unit tests are co-located next to the source they cover (`src/**/*.test.ts`) and run in the Node environment (no jsdom). The use-case repository interfaces (`*.repository.interface.ts`) make them dependency-free — pass a fake/in-memory repository, no Supabase required.
-
-### Coverage scope: Clean Architecture core in, outer layers out
-
-SonarCloud's coverage gate targets **logic, not volume**. The new-code gate (Clean as You Code) already limits the burden to code you add or change — not legacy. On top of that, only the **Clean Architecture core** is in the coverage metric; the outer layers are excluded (in both `sonar.coverage.exclusions` and Vitest's `coverage.exclude`) because they are exercised by E2E, are framework/config glue, or are invisible to browser V8 coverage (Server Components, server actions).
-
-| In coverage scope (needs unit tests)       | Out of coverage scope (E2E / glue, no unit tests required) |
-| ------------------------------------------ | --------------------------------------------------------- |
-| Use-cases (`*.use-case.ts`)                | DTOs (`*.dto.ts`), Zod schemas (`*.schema.ts`), enums (`*.enum.ts`) |
-| Entity validation (`book.entity.ts`)       | Repository interfaces (`*.repository.interface.ts`)       |
-| Mappers (`*.mapper.ts`)                    | Supabase repository implementations, server actions (`actions.ts`) |
-|                                            | Presentational components, shadcn UI (`components/ui/**`)  |
-|                                            | DI containers, env/Supabase/auth factories, Sentry config, instrumentation |
-|                                            | App shell, route handlers, middleware, generated types, `errors.ts`, `utils.ts` |
-
-Excluded files are still analyzed for **bugs, smells, and duplication** — they just don't count toward the coverage %. Write unit tests for new use-cases, entity logic, and mappers; the outer layers are covered by E2E. Tradeoff: new infrastructure/presentation code is smell/bug-gated, not coverage-gated.
-
-### E2E tests
-
-### Prerequisites
-
-Local Supabase must be running:
-
-```bash
-pnpm supabase:start
-```
-
-Copy `.env.test.example` to `.env.test` (or let `supabase start` generate defaults):
-
-```bash
-cp .env.test.example .env.test
-```
-
-### Test Structure
+### E2E test structure
 
 ```
 tests/
 ├── _shared/
-│   ├── app-fixtures.ts              # Merged fixtures (coverage + supabase test client)
+│   ├── app-fixtures.ts              # testUser + authenticatedPage + coverage fixtures
 │   └── fixtures/
-│       └── supabase-test-client.ts  # Supabase service client for seeding test data
-├── books.test.ts                    # Books feature tests
-└── smoke.test.ts                    # Smoke test
+│       ├── auth-fixtures.ts          # createTestUser, deleteTestUser, signInAndGetCookies
+│       ├── seed-helpers.ts           # Seed transcripts, tasks, trello connections + cleanup
+│       └── supabase-test-client.ts   # Service role client (bypasses RLS)
+├── smoke.test.ts                    # Home page heading
+├── upload.test.ts                   # Dropzone, textarea, extract btn, Trello banner, sidebar
+├── review.test.ts                   # Empty state, board/list selectors
+├── review-db.test.ts                # Seeded tasks display, add/delete/edit → DB verification
+├── settings.test.ts                 # Heading, Trello card, disconnected state
+├── settings-db.test.ts              # Connected state, disconnect → DB row removed
+├── history.test.ts                  # Empty state
+├── history-db.test.ts               # Seeded transcripts, task counts, status pills, review links
+├── signin.test.ts                   # Page renders, magic link success, no sidebar
+├── auth-callback.test.ts            # No params / invalid code → redirect home
+├── trello-callback.test.ts          # No token error, fake token failure
+├── redirects.test.ts                # Unauthenticated → /signin for all protected routes
+└── navigation.test.ts               # Header email, logout, sidebar nav, mobile sheet, amber dot
 ```
 
-All tests import `test` and `expect` from `_shared/app-fixtures` (not directly from Playwright).
+### Running tests
 
-### Coverage Reports
+```bash
+supabase start                   # Start local Supabase
+pnpm test                        # Run E2E suite
+pnpm test:ui                     # Playwright UI mode
+pnpm test:reset                  # Reset DB + run E2E (use after migration changes)
+pnpm test:unit                   # Run unit tests (no Supabase needed)
+pnpm test:unit:coverage          # Unit tests + V8 coverage
+```
 
-| Format        | Path                                              |
-| ------------- | ------------------------------------------------- |
-| Monocart HTML | `./coverage/tests/monocart-report.html`           |
-| V8 HTML (E2E) | `./coverage/tests/v8/index.html`                  |
-| LCOV (E2E)    | `./coverage/tests/lcov.info`                      |
-| LCOV (unit)   | `./coverage/unit/lcov.info`                      |
-| Cobertura XML | `./coverage/tests/cobertura/code-coverage.cobertura.xml` |
+### Coverage
 
-SonarCloud reads both LCOV files (`sonar.*.lcov.reportPaths=coverage/unit/lcov.info,coverage/tests/lcov.info`) so unit + E2E coverage feed a single analysis.
+SonarCloud merges two LCOV feeds:
 
-## Git Hooks
+| Feed                     | Source      | Scope                                      |
+| ------------------------ | ----------- | ------------------------------------------ |
+| `coverage/unit/lcov.info`  | Vitest      | Use-cases, entity validation, mappers      |
+| `coverage/tests/lcov.info` | Playwright  | Client-rendered components, pages          |
 
-[Husky](https://typicode.github.io/husky/) manages Git hooks:
-
-- **pre-commit**: runs `nano-staged`, which executes `biome check --staged` on staged files.
-- **pre-push**: runs `pnpm typecheck && pnpm test`.
-
-Hooks are installed automatically via the `prepare` script when running `pnpm install`.
+Coverage scope = Clean Architecture core. Outer layers (UI components, server actions, DI containers, infrastructure adapters) are excluded from the coverage metric — they are E2E-covered or framework glue.
 
 ## CI (GitHub Actions)
 
 The `.github/workflows/ci.yml` workflow runs on push to `main` and on pull requests:
-
-1. **lint** — Biome lint + TypeScript typecheck
-2. **test** — E2E tests (Playwright + local Supabase + V8 coverage via Monocart Reporter); uploads the `test-report` (E2E coverage) artifact
-3. **sonar** — SonarCloud static analysis + Quality Gate. **Runs after `test`**: it generates the Vitest unit coverage (`coverage/unit/lcov.info`), downloads the E2E coverage artifact (`coverage/tests/lcov.info`), then scans both so coverage is never missing from the report. PR decoration posts the gate status and inline issue comments to the PR.
-4. **build** — Production build with Sentry source map upload (gated on lint + test)
-
-A **snyk** job runs in parallel, scanning dependencies for high-severity vulnerabilities and uploading the results as SARIF to GitHub Code Scanning. It is allowed to continue on error so findings do not block the pipeline.
 
 ```
 lint ──┐
@@ -246,40 +238,38 @@ test ──┼──> sonar
 snyk
 ```
 
-### Required GitHub Configuration
+1. **lint** — Biome lint + TypeScript typecheck
+2. **test** — E2E tests with local Supabase + V8 coverage; uploads coverage artifact
+3. **sonar** — SonarCloud analysis (runs after test, downloads E2E coverage, generates unit coverage, scans both)
+4. **build** — Production build with Sentry source maps (gated on lint + test)
+5. **snyk** — Dependency vulnerability scan (SARIF → GitHub Code Scanning, non-blocking)
 
-Configure these in **Settings → Secrets and variables → Actions**.
-
-**Secrets** (sensitive values):
+### Required GitHub Secrets
 
 | Secret              | Description                            |
 | ------------------- | -------------------------------------- |
-| `SONAR_TOKEN`       | SonarCloud analysis token               |
+| `SONAR_TOKEN`       | SonarCloud analysis token              |
 | `SENTRY_AUTH_TOKEN` | Sentry auth token for source map upload |
 | `SENTRY_ORG`        | Sentry organization slug               |
 | `SENTRY_PROJECT`    | Sentry project slug                    |
-| `SNYK_TOKEN`        | Snyk API token for vulnerability scans |
+| `SNYK_TOKEN`        | Snyk API token                         |
 
-> **Note:** `SONAR_TOKEN` is the only SonarCloud secret you need to add manually. `GITHUB_TOKEN` is provided automatically by GitHub Actions. No `SONAR_HOST_URL` is required for SonarCloud.
-
-**Variables** (public values, safe to expose):
+### Required GitHub Variables
 
 | Variable                               | Description                     |
 | -------------------------------------- | ------------------------------- |
 | `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL            |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable (anon) key |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key        |
 | `NEXT_PUBLIC_SENTRY_DSN`               | Sentry DSN (client + server)    |
 
-### Shift-left: SonarCloud gate on every PR
+## Git Hooks
 
-Coverage and code quality are enforced as early as possible (shift-left):
+Husky manages Git hooks:
 
-1. **IDE — SonarLint Connected Mode.** Install the SonarLint extension (VS Code / JetBrains) and bind it to SonarCloud organization `general-organization`, project `Agustin-Perezz_next-supabase-scaffold`. This syncs the quality profile and surfaces issues in-editor before commit, in agreement with CI.
-2. **Pre-push — unit tests.** The Husky `pre-push` hook runs `pnpm test:unit` before the slower E2E suite, so pure-logic regressions fail fast locally.
-3. **PR — analysis + decoration.** The `sonar` job runs on every PR, posts the Quality Gate status and inline issue comments to the PR (PR decoration, enabled by the job's `pull-requests: write` permission), and reports only *new* issues introduced by the PR.
-4. **Merge gate — required check.** In **Settings → Branches → Branch protection rules** for `main`, add the **"SonarCloud Code Analysis"** check as a *required* status check so a failing Quality Gate blocks the merge.
+- **pre-commit**: `nano-staged` runs `biome check --staged` on staged files
+- **pre-push**: `pnpm typecheck && pnpm test`
 
-On SonarCloud, keep the **New Code Definition** set to `previous_version` and leave the Quality Gate on the default **Sonar way** (new-code coverage ≥ 80%, no new issues, new duplication ≤ 3%). Do not raise an overall-coverage condition until the unit suite matures — new-code-only keeps the gate achievable for server-action / route code that is covered by E2E or excluded.
+Hooks install automatically via the `prepare` script on `pnpm install`.
 
 ## Documentation
 
