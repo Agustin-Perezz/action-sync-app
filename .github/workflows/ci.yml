@@ -11,12 +11,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run unit tests with coverage
+        run: pnpm test:unit:coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-coverage
+          path: coverage/unit/lcov.info
+          retention-days: 1
+
   sonar:
     name: SonarCloud Analysis
-    # Coverage must exist before the scan: this job waits for the E2E test job
-    # (which uploads the Playwright/Monocart LCOV) and runs the fast Vitest unit
-    # coverage itself, then scans both reports.
-    needs: [test]
+    needs: [unit-test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,17 +49,13 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Run unit tests with coverage
-        run: pnpm test:unit:coverage
-      - name: Download E2E coverage artifact
+      - name: Download unit coverage artifact
         uses: actions/download-artifact@v7
         with:
-          name: test-report
-          path: coverage/tests
-      - name: Verify LCOV reports exist
-        run: |
-          test -f coverage/unit/lcov.info && echo "unit lcov ok"
-          test -f coverage/tests/lcov.info && echo "e2e lcov ok"
+          name: unit-coverage
+          path: coverage/unit
+      - name: Verify unit LCOV report exists
+        run: test -f coverage/unit/lcov.info && echo "unit lcov ok"
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v8.2.1
         env:
@@ -75,6 +88,15 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Restore Supabase Docker images
+        id: supabase-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/supabase-images.tar
+          key: supabase-images-v2-${{ hashFiles('supabase/config.toml') }}
+      - name: Load cached Docker images
+        if: steps.supabase-cache.outputs.cache-hit == 'true'
+        run: docker load -i /tmp/supabase-images.tar
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v3
         with:
@@ -83,6 +105,19 @@ jobs:
         run: supabase start -x imgproxy,edge-runtime,logflare,vector,pgbouncer
       - name: Reset database with migrations
         run: supabase db reset
+      - name: Save Supabase Docker images
+        if: steps.supabase-cache.outputs.cache-hit != 'true' && always()
+        run: |
+          mkdir -p /tmp
+          docker images --format '{{.Repository}}:{{.Tag}}' \
+            | grep -iE 'supabase|postgrest|gotrue|realtime|kong|inbucket|mailpit|analytics' \
+            | xargs docker save -o /tmp/supabase-images.tar
+      - name: Save cache
+        if: steps.supabase-cache.outputs.cache-hit != 'true' && always()
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/supabase-images.tar
+          key: supabase-images-v2-${{ hashFiles('supabase/config.toml') }}
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(pnpm list @playwright/test --depth=0 --json | jq -r '.[0].devDependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
@@ -108,13 +143,6 @@ jobs:
           echo "OPENAI_API_KEY=mock-openai-api-key" >> .env.test
       - name: Run E2E tests
         run: pnpm test:ci
-      - name: Upload test report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-report
-          path: coverage/tests/
-          retention-days: 7
       - name: Upload Playwright traces and screenshots
         if: failure()
         uses: actions/upload-artifact@v7

@@ -21,42 +21,15 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html", "lcov"],
       reportsDirectory: "./coverage/unit",
-      include: ["src/**/*.ts", "src/**/*.tsx"],
-      // Mirrors sonar.coverage.exclusions so the LCOV and the gate agree.
-      // Scope = Clean Architecture core (use-cases, entity, mappers). Outer layers
-      // (UI, server actions, DI containers, Supabase factories/repos, config) are
-      // dropped from both: they are E2E-covered or framework glue, not unit logic.
-      exclude: [
-        "src/**/*.test.ts",
-        "src/**/*.spec.ts",
-        "src/infrastructure/database/postgres/database.types.ts",
-        "src/infrastructure/database/postgres/entities/**",
-        "src/infrastructure/database/postgres/repositories/**",
-        "src/**/*.dto.ts",
-        "src/**/*.schema.ts",
-        "src/**/*.enum.ts",
-        "src/**/*.repository.interface.ts",
-        "src/components/ui/**",
-        "src/hooks/useFileDropzone.ts",
-        "src/lib/containers/**",
-        "src/lib/shared/infrastructure/**",
-        "src/lib/utils.ts",
-        "src/lib/utils/**",
-        "src/domain/entities/errors.ts",
-        "src/instrumentation.ts",
-        "src/sentry.*.config.ts",
-        "src/app/layout.tsx",
-        "src/app/**/page.tsx",
-        "src/app/**/loading.tsx",
-        "src/app/**/error.tsx",
-        "src/app/**/not-found.tsx",
-        "src/app/**/route.ts",
-        "src/app/**/actions.ts",
-        "src/app/**/components/**",
-        "src/app/**/layout.tsx",
-        "src/app/**/lib/**",
-        "src/app/**/hooks/**",
-        "src/proxy.ts",
+      // Scope = Clean Architecture core only. Include is narrower than exclude:
+      // new outer files land outside coverage by default, no drift, no dead globs.
+      // sonar.coverage.exclusions in sonar-project.properties aligns the SonarCloud
+      // denominator to this same scope — delivery layer and infrastructure are
+      // excluded from the coverage gate (covered by E2E, not unit tests).
+      include: [
+        "src/application/use-cases/**/*.use-case.ts",
+        "src/domain/entities/**/*.entity.ts",
+        "src/infrastructure/database/postgres/mappers/**/*.mapper.ts",
       ],
     },
   },

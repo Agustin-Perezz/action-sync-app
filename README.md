@@ -218,31 +218,31 @@ pnpm test:unit:coverage          # Unit tests + V8 coverage
 
 ### Coverage
 
-SonarCloud merges two LCOV feeds:
+SonarCloud receives a single unit-only LCOV feed:
 
 | Feed                     | Source      | Scope                                      |
 | ------------------------ | ----------- | ------------------------------------------ |
 | `coverage/unit/lcov.info`  | Vitest      | Use-cases, entity validation, mappers      |
-| `coverage/tests/lcov.info` | Playwright  | Client-rendered components, pages          |
 
-Coverage scope = Clean Architecture core. Outer layers (UI components, server actions, DI containers, infrastructure adapters) are excluded from the coverage metric — they are E2E-covered or framework glue.
+Coverage scope = the Clean Architecture core, defined once in `vitest.config.ts` `coverage.include` (`**/*.use-case.ts`, `src/domain/entities/**/*.entity.ts`, `**/*.mapper.ts`). New outer files land outside coverage by default — zero exclusion-list maintenance. E2E coverage (Playwright/Monocart) stays local for debugging but is not fed to Sonar: browser V8 coverage cannot see Server Components, server actions, or the domain core. Outer layers are still analyzed for bugs, smells, and duplication; they are not coverage-gated.
 
 ## CI (GitHub Actions)
 
 The `.github/workflows/ci.yml` workflow runs on push to `main` and on pull requests:
 
 ```
-lint ──┐
-       ├──> build
-test ──┼──> sonar
+lint ─────────────┐
+unit-test ─> sonar┼──> build
+test ─────────────┤
 snyk
 ```
 
 1. **lint** — Biome lint + TypeScript typecheck
-2. **test** — E2E tests with local Supabase + V8 coverage; uploads coverage artifact
-3. **sonar** — SonarCloud analysis (runs after test, downloads E2E coverage, generates unit coverage, scans both)
-4. **build** — Production build with Sentry source maps (gated on lint + test)
-5. **snyk** — Dependency vulnerability scan (SARIF → GitHub Code Scanning, non-blocking)
+2. **unit-test** — Vitest unit tests + V8 coverage; uploads the LCOV artifact
+3. **sonar** — SonarCloud analysis (runs after unit-test, downloads the unit LCOV artifact, scans)
+4. **test** — E2E tests with local Supabase (Supabase Docker images cached); traces uploaded on failure
+5. **build** — Production build with Sentry source maps (gated on lint + test)
+6. **snyk** — Dependency vulnerability scan (SARIF → GitHub Code Scanning, non-blocking)
 
 ### Required GitHub Secrets
 
