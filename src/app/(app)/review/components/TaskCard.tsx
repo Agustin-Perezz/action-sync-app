@@ -1,26 +1,11 @@
 "use client";
 
-import { Check, Loader2, Trash2, X } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Task } from "../types";
+import { TaskCardActions } from "./TaskCardActions";
 import { TaskDescription } from "./TaskDescription";
 import { TaskDueDate } from "./TaskDueDate";
 import { TaskTitleInput } from "./TaskTitleInput";
-
-export type TaskCardProps = {
-  readonly task: Task;
-  readonly isEditing: boolean;
-  readonly editingTask: Task | null;
-  readonly isSaving: boolean;
-  readonly saveError: string | null;
-  readonly onStartEdit: (task: Task) => void;
-  readonly onEditField: (updated: Task) => void;
-  readonly onCancelEdit: () => void;
-  readonly onSave: () => void;
-  readonly onDelete: () => void;
-};
+import type { TaskCardProps } from "./task-card-props";
 
 export function TaskCard({
   task,
@@ -46,44 +31,13 @@ export function TaskCard({
             onFocus={() => !isEditing && onStartEdit(task)}
             readOnly={isSaving}
           />
-          {isEditing ? (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={onSave}
-                disabled={isSaving}
-                aria-label="Save task"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                {isSaving ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Check className="size-4" />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={onCancelEdit}
-                disabled={isSaving}
-                aria-label="Cancel edit"
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={onDelete}
-              aria-label="Delete task"
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 />
-            </Button>
-          )}
+          <TaskCardActions
+            isEditing={isEditing}
+            isSaving={isSaving}
+            onSave={onSave}
+            onCancelEdit={onCancelEdit}
+            onDelete={onDelete}
+          />
         </div>
         <TaskDescription
           task={displayTask}

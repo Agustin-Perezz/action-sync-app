@@ -1,16 +1,10 @@
 "use client";
 
 import { useReviewTasks } from "../hooks/useReviewTasks";
-import type { Board, Task } from "../types";
 import { AddManualTaskButton } from "./AddManualTaskButton";
-import { ReviewControls } from "./ReviewControls";
+import { ReviewControlsSection } from "./ReviewControlsSection";
+import type { ReviewWorkspaceProps } from "./review-workspace-props";
 import { TaskList } from "./TaskList";
-
-export type ReviewWorkspaceProps = {
-  readonly transcriptId: string;
-  readonly initialTasks: readonly Task[];
-  readonly initialBoards: readonly Board[];
-};
 
 export function ReviewWorkspace({
   transcriptId,
@@ -25,7 +19,7 @@ export function ReviewWorkspace({
 
   return (
     <div>
-      <ReviewControls
+      <ReviewControlsSection
         taskCount={review.tasks.length}
         board={review.board}
         list={review.list}
