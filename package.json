@@ -50,7 +50,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.0",
+    "@biomejs/biome": "2.5.9",
     "@playwright/test": "^1.61.1",
     "@sentry/nextjs": "^10.63.0",
     "@tailwindcss/postcss": "^4",
